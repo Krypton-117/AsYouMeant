@@ -1,0 +1,29 @@
+{
+  "name": "asyoumeant",
+  "version": "0.1.0",
+  "description": "Contract-governed development loops aligned to explicit user intent.",
+  "author": {
+    "name": "AsYouMeant contributors"
+  },
+  "license": "MPL-2.0",
+  "keywords": [
+    "agent",
+    "contracts",
+    "development",
+    "guardrails"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AsYouMeant",
+    "shortDescription": "Build software from an approved intent contract.",
+    "longDescription": "AsYouMeant compiles user intent into gated development and acceptance contracts before implementation begins.",
+    "developerName": "AsYouMeant contributors",
+    "category": "Productivity",
+    "capabilities": [
+      "Contract governance"
+    ],
+    "defaultPrompt": [
+      "Help me prepare an AsYouMeant pre-loop contract."
+    ]
+  }
+}

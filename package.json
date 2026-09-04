@@ -1,0 +1,30 @@
+{
+  "name": "asyoumeant",
+  "version": "0.1.0",
+  "description": "Contract-governed development loops aligned to explicit user intent.",
+  "private": true,
+  "type": "module",
+  "license": "MPL-2.0",
+  "engines": {
+    "node": "24.11.1"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "1.18.18",
+    "@types/node": "24.1.0",
+    "typescript": "7.0.2"
+  }
+}
