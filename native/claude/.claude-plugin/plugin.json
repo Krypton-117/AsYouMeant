@@ -1,0 +1,13 @@
+{
+  "name": "asyoumeant",
+  "displayName": "AsYouMeant",
+  "version": "0.1.0",
+  "description": "Contract-governed development loops aligned to explicit user intent.",
+  "author": {
+    "name": "AsYouMeant contributors"
+  },
+  "license": "MPL-2.0",
+  "keywords": ["agent", "contracts", "development", "guardrails"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

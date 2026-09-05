@@ -1,0 +1,29 @@
+{
+  "description": "AsYouMeant Codex source recognition and contract Guard bridge.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const p=require('node:path');require(p.join(process.env.PLUGIN_ROOT,'hooks','asyoumeant-codex.cjs'))\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const p=require('node:path');require(p.join(process.env.PLUGIN_ROOT,'hooks','asyoumeant-codex.cjs'))\"",
+            "timeout": 5,
+            "statusMessage": "Checking the approved AsYouMeant contract..."
+          }
+        ]
+      }
+    ]
+  }
+}

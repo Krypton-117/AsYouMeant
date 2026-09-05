@@ -1,0 +1,16 @@
+{
+  "name": "asyoumeant",
+  "owner": {
+    "name": "AsYouMeant contributors"
+  },
+  "metadata": {
+    "description": "AsYouMeant native host packages."
+  },
+  "plugins": [
+    {
+      "name": "asyoumeant",
+      "source": "./native/claude",
+      "description": "Contract-governed development loops aligned to explicit user intent."
+    }
+  ]
+}

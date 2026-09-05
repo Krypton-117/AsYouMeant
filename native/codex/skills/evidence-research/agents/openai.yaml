@@ -1,0 +1,6 @@
+interface:
+  display_name: "Evidence research"
+  short_description: "Resolve one contract-bound technical question"
+  default_prompt: "Use $evidence-research to resolve this named contract question."
+policy:
+  allow_implicit_invocation: true

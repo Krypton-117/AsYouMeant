@@ -1,0 +1,32 @@
+{
+  "description": "AsYouMeant Claude Code source recognition and contract Guard bridge.",
+  "hooks": {
+    "UserPromptExpansion": [
+      {
+        "matcher": "asyoumeant:major-loop-runner",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/asyoumeant-claude.cjs"],
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/asyoumeant-claude.cjs"],
+            "timeout": 5,
+            "statusMessage": "Checking the approved AsYouMeant contract..."
+          }
+        ]
+      }
+    ]
+  }
+}

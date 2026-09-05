@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pre-loop governor"
+  short_description: "Turn intent into a reviewed development contract"
+  default_prompt: "Use $pre-loop-governor to prepare this project before implementation."
+policy:
+  allow_implicit_invocation: true

@@ -17,7 +17,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "conformance": "node --test dist/test/c12-conformance-runner.test.js",
     "demo:m2": "node scripts/demo-m2.mjs",
+    "release:check": "node scripts/release-check.mjs",
     "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
