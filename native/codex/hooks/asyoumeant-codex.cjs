@@ -45,3 +45,4 @@ function readStdin(maxWaitMs = 1500) {
     process.stderr.write(`AsYouMeant Codex hook failed open: ${name}\n`);
   }
 })();
+// SPDX-License-Identifier: MPL-2.0

@@ -48,7 +48,7 @@ export function verifyClaudePluginContract(packageRoot: string): ClaudeContractV
   const result: ClaudeContractVerification = {
     hostVersion: CLAUDE_CODE_VERSION,
     contractSnapshot: CLAUDE_CONTRACT_SNAPSHOT,
-    manifest: manifest.name === "asyoumeant" && manifest.version === "0.1.0" && manifest.hooks === "./hooks/hooks.json",
+    manifest: manifest.name === "asyoumeant" && manifest.version === "0.2.0" && manifest.hooks === "./hooks/hooks.json",
     namespacedSkill: expansion?.matcher === "asyoumeant:major-loop-runner",
     userOnlyStart: /disable-model-invocation:\s*true/.test(skill),
     sourceHook: Boolean(expansion),
@@ -64,3 +64,4 @@ export function verifyClaudePluginContract(packageRoot: string): ClaudeContractV
   }
   return result;
 }
+// SPDX-License-Identifier: MPL-2.0

@@ -29,7 +29,7 @@ const sourceKindByHost: Record<HostId, NativeStartSourceKind> = {
   codex: "codex-user-prompt-submit",
   "claude-code": "claude-user-prompt-expansion",
   opencode: "opencode-command-transform",
-  dsh: "dsh-command-handler"
+  dsh: "dsh-skill-invocation"
 };
 
 const sensitiveKinds = new Set<GuardAction["kind"]>([
@@ -673,3 +673,4 @@ export function withHumanFeedback(
     feedback: { label, source }
   };
 }
+// SPDX-License-Identifier: MPL-2.0

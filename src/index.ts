@@ -77,9 +77,27 @@ export {
   uninstallOpenCodePlugin
 } from "./hosts/opencode/lifecycle.js";
 export type * from "./hosts/opencode/lifecycle.js";
+export {
+  cleanupDshIsolation,
+  dshChildEnvironment,
+  DSH_PACKAGE_NAME,
+  DSH_PROFILE_NAME,
+  DSH_SELFCHECK_TOOL,
+  DSH_SKILL_NAME,
+  DSH_START_SOURCE,
+  DSH_VERSION,
+  DshLifecycleError,
+  inspectDshPlugin,
+  installDshPlugin,
+  readDshPackageContract,
+  runDshHeadlessTask,
+  uninstallDshPlugin
+} from "./hosts/dsh/lifecycle.js";
+export type * from "./hosts/dsh/lifecycle.js";
 export { reviewGate } from "./conformance/reviewer.js";
 export type * from "./conformance/reviewer.js";
 export { ConformanceError, runConformance } from "./conformance/runner.js";
 export type * from "./conformance/runner.js";
 export { presentAcceptance } from "./conformance/presenter.js";
 export type * from "./conformance/presenter.js";
+// SPDX-License-Identifier: MPL-2.0

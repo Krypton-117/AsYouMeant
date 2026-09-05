@@ -637,3 +637,4 @@ export class MajorLoopRunner {
     };
   }
 }
+// SPDX-License-Identifier: MPL-2.0

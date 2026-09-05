@@ -210,3 +210,4 @@ export function uninstallOpenCodePlugin(options: OpenCodeLifecycleOptions): void
 export function readOpenCodeContractEvidence(packageRoot: string): Record<string, unknown> {
   return JSON.parse(readFileSync(join(packageRoot, "CONTRACT-EVIDENCE.json"), "utf8")) as Record<string, unknown>;
 }
+// SPDX-License-Identifier: MPL-2.0

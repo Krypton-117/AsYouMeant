@@ -293,3 +293,4 @@ export const contractCandidateSchema = {
     }
   }
 } as const;
+// SPDX-License-Identifier: MPL-2.0

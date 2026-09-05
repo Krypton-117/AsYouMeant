@@ -5,7 +5,7 @@ export type NativeStartSourceKind =
   | "codex-user-prompt-submit"
   | "claude-user-prompt-expansion"
   | "opencode-command-transform"
-  | "dsh-command-handler";
+  | "dsh-skill-invocation";
 
 export interface NativeStartPath {
   host: HostId;
@@ -183,3 +183,4 @@ export interface GuardDecision {
   feedback: HumanFeedback;
   runtimeEvidence: GuardRuntimeEvidence;
 }
+// SPDX-License-Identifier: MPL-2.0

@@ -252,3 +252,4 @@ test("C1 maps explicit aliases and escalates genuine ambiguity", () => {
     query: "未知概念"
   });
 });
+// SPDX-License-Identifier: MPL-2.0

@@ -183,3 +183,4 @@ export type IntentMatch =
   | { status: "matched"; query: string; termId: string }
   | { status: "ambiguous"; query: string; termIds: string[] }
   | { status: "unmatched"; query: string };
+// SPDX-License-Identifier: MPL-2.0

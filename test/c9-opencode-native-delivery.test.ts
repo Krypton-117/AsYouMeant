@@ -117,7 +117,7 @@ test("C9 package records the frozen native API mapping", () => {
   const manifest = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as Record<string, unknown>;
   assert.deepEqual(manifest, {
     name: "asyoumeant-opencode",
-    version: "0.1.0",
+    version: "0.2.0",
     type: "module",
     private: true,
     license: "MPL-2.0",
@@ -199,3 +199,4 @@ test("C9 completes one isolated real OpenCode lifecycle and native chain", async
   assert.equal(existsSync(join(workspaceRoot, ".opencode", "plugins", "asyoumeant.js")), false);
   assert.equal(existsSync(join(workspaceRoot, ".opencode", "asyoumeant-runtime")), false);
 });
+// SPDX-License-Identifier: MPL-2.0

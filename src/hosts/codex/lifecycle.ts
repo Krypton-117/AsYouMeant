@@ -143,3 +143,4 @@ export function uninstallCodexPlugin(options: CodexLifecycleOptions): CodexComma
   }
   return [plugin, marketplace];
 }
+// SPDX-License-Identifier: MPL-2.0

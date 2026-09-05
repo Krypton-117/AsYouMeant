@@ -416,3 +416,4 @@ test("C6 exposes a fix only for the uniquely proven defect", () => {
   assert.equal(kernel.fixFor("H-ONE").defect.allowedTargetPaths[0], "src/one.ts");
   assert.throws(() => kernel.fixFor("H-TWO"), DiagnosticKernelError);
 });
+// SPDX-License-Identifier: MPL-2.0

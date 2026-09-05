@@ -158,3 +158,4 @@ export class EvidenceResolver {
     };
   }
 }
+// SPDX-License-Identifier: MPL-2.0

@@ -6,7 +6,7 @@ import { dirname, resolve } from "node:path";
 const nodeFlag = process.argv.indexOf("--node");
 const nodeId = nodeFlag >= 0 ? process.argv[nodeFlag + 1] : undefined;
 
-if (nodeFlag < 0 || !/^C(?:[1-9]|1[1-3])$/.test(nodeId ?? "")) {
+if (nodeFlag < 0 || !/^C(?:[1-9]|1[0-5])$/.test(nodeId ?? "")) {
   console.error("Usage: pnpm verify --node C<n>, where n is an active Component id.");
   process.exit(2);
 }
@@ -21,9 +21,12 @@ const suites = {
   C7: "dist/test/c7-codex-native-delivery.test.js",
   C8: "dist/test/c8-claude-native-delivery.test.js",
   C9: "dist/test/c9-opencode-native-delivery.test.js",
+  C10: "dist/test/c10-dsh-experimental-probe.test.js",
   C11: "dist/test/c11-independent-gate-reviewer.test.js",
   C12: "dist/test/c12-conformance-runner.test.js",
-  C13: "dist/test/c13-acceptance-presenter.test.js"
+  C13: "dist/test/c13-acceptance-presenter.test.js",
+  C14: "test/c14-license-compliance.test.mjs",
+  C15: "test/c15-bilingual-readme.test.mjs"
 };
 const suite = suites[nodeId];
 
@@ -65,3 +68,4 @@ const test = spawnSync(process.execPath, ["--test", suite], {
   stdio: "inherit"
 });
 process.exit(test.status ?? 1);
+// SPDX-License-Identifier: MPL-2.0

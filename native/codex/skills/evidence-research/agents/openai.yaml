@@ -4,3 +4,4 @@ interface:
   default_prompt: "Use $evidence-research to resolve this named contract question."
 policy:
   allow_implicit_invocation: true
+# SPDX-License-Identifier: MPL-2.0

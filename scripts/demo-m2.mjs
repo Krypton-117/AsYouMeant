@@ -1,8 +1,8 @@
 import { Guard, MajorLoopRunner, StateLedger } from "../dist/src/index.js";
 
-const candidateVersion = "2026-09-04.30";
+const candidateVersion = "2026-09-05.2";
 const projectionIdentity = "m2-demo-projection/1";
-const startCommand = "$major-loop-runner start candidate=2026-09-04.30";
+const startCommand = "$major-loop-runner start candidate=2026-09-05.2";
 const now = "2026-09-05T03:00:00+08:00";
 
 const action = (id, workItemId, kind) => ({
@@ -152,3 +152,4 @@ for (const [label, state, evidence] of rows) {
   console.log(`${label}: ${state} | ${evidence}`);
 }
 console.log(`Guard/主机边界: ${illegalStart.guardEffect} / ${illegalStart.hostEffect.outcome}`);
+// SPDX-License-Identifier: MPL-2.0

@@ -421,3 +421,4 @@ export class DiagnosticKernel {
     };
   }
 }
+// SPDX-License-Identifier: MPL-2.0

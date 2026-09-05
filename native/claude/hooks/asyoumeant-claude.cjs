@@ -44,3 +44,4 @@ function readStdin(maxWaitMs = 1500) {
     process.stderr.write(`AsYouMeant Claude hook failed open: ${name}\n`);
   }
 })();
+// SPDX-License-Identifier: MPL-2.0

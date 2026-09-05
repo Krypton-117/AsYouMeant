@@ -295,3 +295,4 @@ test("C3 rejects duplicate evidence identities", () => {
   expectLedgerFailure(() => ledger.append(evidence(4)), /evidence id is duplicated/);
   assert.equal(Object.keys(ledger.replay().evidence).length, 1);
 });
+// SPDX-License-Identifier: MPL-2.0

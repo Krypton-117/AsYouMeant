@@ -4,3 +4,4 @@ interface:
   default_prompt: "Use $major-loop-runner start candidate=<contract-version> to run the reviewed contract."
 policy:
   allow_implicit_invocation: false
+# SPDX-License-Identifier: MPL-2.0

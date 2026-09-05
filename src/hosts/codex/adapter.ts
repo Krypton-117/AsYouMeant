@@ -278,3 +278,4 @@ export function handleCodexHook(
   }
   return { output: null, permit, decision, sourceRecognized: false };
 }
+// SPDX-License-Identifier: MPL-2.0
