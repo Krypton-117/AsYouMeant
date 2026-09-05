@@ -1,0 +1,23 @@
+{
+  "name": "asyoumeant-dsh",
+  "version": "0.2.0",
+  "description": "Experimental native DSH profile bundle for AsYouMeant.",
+  "type": "module",
+  "main": "./asyoumeant-dsh.js",
+  "exports": "./asyoumeant-dsh.js",
+  "files": [
+    "asyoumeant-dsh.js",
+    "cordis.patch.yml",
+    "skills",
+    "CONTRACT-EVIDENCE.json"
+  ],
+  "license": "MPL-2.0",
+  "engines": {
+    "dsh": "0.1.1-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

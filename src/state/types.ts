@@ -193,3 +193,4 @@ export interface LedgerView {
   checkpoints: Record<string, CheckpointView>;
   recoveries: RecoveryView[];
 }
+// SPDX-License-Identifier: MPL-2.0

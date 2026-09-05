@@ -447,3 +447,4 @@ export class StateLedger {
     return clone(this.#events);
   }
 }
+// SPDX-License-Identifier: MPL-2.0

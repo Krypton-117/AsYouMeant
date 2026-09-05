@@ -4,3 +4,4 @@ interface:
   default_prompt: "Use $diagnostic-kernel for this recorded failure."
 policy:
   allow_implicit_invocation: true
+# SPDX-License-Identifier: MPL-2.0

@@ -99,3 +99,4 @@ export interface DiagnosticKernelDependencies {
   authorizeProbe: (probe: DiagnosticProbe, failure: LedgerEvidenceView) => GuardDecision;
   runProbe: (probe: DiagnosticProbe, failure: LedgerEvidenceView) => Omit<ProbeResult, "probeId">;
 }
+// SPDX-License-Identifier: MPL-2.0

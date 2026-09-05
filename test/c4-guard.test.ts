@@ -458,3 +458,4 @@ test("C4 keeps Guard and host effects separate and supports human labels", () =>
   });
   assert.deepEqual(decision.hostEffect, { outcome: "unobserved", evidenceId: null });
 });
+// SPDX-License-Identifier: MPL-2.0

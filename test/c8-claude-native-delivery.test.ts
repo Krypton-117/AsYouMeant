@@ -146,3 +146,4 @@ test("C8 prebuilt hook uses the contract adapter without starting Claude Code", 
   assert.match(started.stdout, /permit ACTIVE/);
   assert.equal(run(preTool("wire-legal", "Read")).stdout, "");
 });
+// SPDX-License-Identifier: MPL-2.0

@@ -1,6 +1,6 @@
 {
   "name": "asyoumeant",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Contract-governed development loops aligned to explicit user intent.",
   "private": true,
   "type": "module",
@@ -19,6 +19,7 @@
     "build": "tsc -p tsconfig.json",
     "conformance": "node --test dist/test/c12-conformance-runner.test.js",
     "demo:m2": "node scripts/demo-m2.mjs",
+    "probe:dsh": "node scripts/probe-dsh.mjs",
     "release:check": "node scripts/release-check.mjs",
     "verify": "node scripts/verify.mjs"
   },

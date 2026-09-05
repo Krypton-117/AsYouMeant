@@ -1,4 +1,10 @@
 node_modules/
 dist/
+!native/codex/dist/
+!native/codex/dist/**
+!native/claude/dist/
+!native/claude/dist/**
+!native/opencode/dist/
+!native/opencode/dist/**
 .work/
 *.log

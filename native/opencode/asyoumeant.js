@@ -43,3 +43,4 @@ export default async function AsYouMeantOpenCodePlugin({ directory }) {
     }
   };
 }
+// SPDX-License-Identifier: MPL-2.0

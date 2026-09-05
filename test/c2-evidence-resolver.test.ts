@@ -161,3 +161,4 @@ test("C2 rejects unnamed questions and duplicate catalog identities", () => {
     /question id is duplicated/
   );
 });
+// SPDX-License-Identifier: MPL-2.0

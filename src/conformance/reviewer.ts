@@ -63,3 +63,4 @@ export function reviewGate(input: Readonly<GateReviewInput>): GateReviewResult {
     conflicts
   };
 }
+// SPDX-License-Identifier: MPL-2.0

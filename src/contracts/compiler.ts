@@ -333,3 +333,4 @@ export function matchIntent(query: string, terms: IntentTerm[]): IntentMatch {
   if (matches.length === 1 && termId) return { status: "matched", query, termId };
   return { status: "ambiguous", query, termIds: matches };
 }
+// SPDX-License-Identifier: MPL-2.0

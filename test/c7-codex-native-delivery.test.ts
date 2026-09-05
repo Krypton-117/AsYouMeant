@@ -113,7 +113,7 @@ test("C7 package binds the native manifest and explicit-only start Skill", () =>
     name: string; version: string; hooks?: string;
   };
   assert.deepEqual({ name: manifest.name, version: manifest.version, hooks: manifest.hooks }, {
-    name: "asyoumeant", version: "0.1.0", hooks: "./hooks/codex-hooks.json"
+    name: "asyoumeant", version: "0.2.0", hooks: "./hooks/codex-hooks.json"
   });
   const policy = readFileSync(join(pluginPackageRoot, "skills", "major-loop-runner", "agents", "openai.yaml"), "utf8");
   assert.match(policy, /allow_implicit_invocation:\s*false/);
@@ -194,3 +194,4 @@ test("C7 completes one isolated real Codex lifecycle and hook chain", () => {
   assert.equal(after.status, 0, after.stderr);
   assert.doesNotMatch(after.stdout.toLowerCase(), /asyoumeant/);
 });
+// SPDX-License-Identifier: MPL-2.0

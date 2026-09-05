@@ -5,9 +5,12 @@ import test from "node:test";
 import {
   ConformanceError,
   runConformance,
+  type DshConformanceEvidence,
   type HostConformanceEvidence
 } from "../src/index.js";
 
+const productVersion = "0.2.0";
+const coreIdentity = "asyoumeant-core-0.2.0";
 const packageVersion = (path: string): string =>
   (JSON.parse(readFileSync(path, "utf8")) as { version: string }).version;
 
@@ -17,7 +20,7 @@ const evidence = (): HostConformanceEvidence[] => [
     component: "C7",
     status: "CLOSED",
     productVersion: packageVersion("native/codex/.codex-plugin/plugin.json"),
-    coreIdentity: "asyoumeant-core-0.1.0",
+    coreIdentity,
     validation: "real-isolated",
     preStart: "deny",
     legalChain: "allow",
@@ -28,7 +31,7 @@ const evidence = (): HostConformanceEvidence[] => [
     component: "C8",
     status: "CLOSED",
     productVersion: packageVersion("native/claude/.claude-plugin/plugin.json"),
-    coreIdentity: "asyoumeant-core-0.1.0",
+    coreIdentity,
     validation: "official-contract",
     preStart: "deny",
     legalChain: "allow",
@@ -39,7 +42,7 @@ const evidence = (): HostConformanceEvidence[] => [
     component: "C9",
     status: "CLOSED",
     productVersion: packageVersion("native/opencode/package.json"),
-    coreIdentity: "asyoumeant-core-0.1.0",
+    coreIdentity,
     validation: "real-isolated",
     preStart: "deny",
     legalChain: "allow",
@@ -47,23 +50,37 @@ const evidence = (): HostConformanceEvidence[] => [
   }
 ];
 
-test("C12 reuses C7-C9 evidence and checks only untested assembly contracts", () => {
-  const result = runConformance(evidence(), "0.1.0");
+const dshEvidence = (): DshConformanceEvidence => ({
+  ...(JSON.parse(readFileSync("native/dsh/CONTRACT-EVIDENCE.json", "utf8")) as DshConformanceEvidence),
+  coreIdentity,
+  artifactPresent: existsSync("native/dsh/package.json")
+});
+
+test("C12 reuses C7-C10 evidence and checks only changed assembly contracts", () => {
+  const result = runConformance(evidence(), dshEvidence(), productVersion);
   assert.equal(result.status, "PASS");
-  assert.deepEqual(result.reusedComponents, ["C7", "C8", "C9"]);
+  assert.deepEqual(result.reusedComponents, ["C10", "C7", "C8", "C9"]);
+  assert.equal(result.experimentalDshOutcome, "VERIFIED_COMPATIBLE");
   assert.deepEqual(result.checks, [
-    "three-host-set",
+    "official-three-host-set",
     "product-version",
     "core-identity",
     "validation-labels",
     "guard-equivalence",
-    "artifact-presence"
+    "artifact-presence",
+    "experimental-dsh",
+    "isolation-cleanup"
   ]);
 });
 
-test("C12 rejects an inaccurate real-host claim", () => {
-  const invalid = evidence();
-  const claude = invalid.find((item) => item.host === "claude-code");
+test("C12 rejects inaccurate official and experimental host claims", () => {
+  const invalidOfficial = evidence();
+  const claude = invalidOfficial.find((item) => item.host === "claude-code");
   if (claude) claude.validation = "real-isolated";
-  assert.throws(() => runConformance(invalid, "0.1.0"), ConformanceError);
+  assert.throws(() => runConformance(invalidOfficial, dshEvidence(), productVersion), ConformanceError);
+
+  const invalidDsh = dshEvidence();
+  Object.assign(invalidDsh, { hostVersion: "0.1.1-rc.3" });
+  assert.throws(() => runConformance(evidence(), invalidDsh, productVersion), ConformanceError);
 });
+// SPDX-License-Identifier: MPL-2.0

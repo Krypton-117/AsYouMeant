@@ -35,3 +35,4 @@ test("C11 fails precisely when one projection belongs to an old candidate", () =
   assert.equal(result.conflicts[0]?.responsibleParty, "Agent");
   assert.equal(result.conflicts[0]?.minimalCorrection, "Regenerate only the stale projection.");
 });
+// SPDX-License-Identifier: MPL-2.0

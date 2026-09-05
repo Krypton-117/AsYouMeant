@@ -12,9 +12,29 @@ export interface HostConformanceEvidence {
   artifactPresent: boolean;
 }
 
+export interface DshConformanceEvidence {
+  host: "dsh";
+  component: "C10";
+  status: "CLOSED";
+  outcome: "VERIFIED_COMPATIBLE" | "VERIFIED_INCOMPATIBLE";
+  productVersion: string;
+  coreIdentity: string;
+  hostVersion: "0.1.1-rc.2";
+  validation: "real-isolated";
+  profileBundleLoaded: boolean;
+  preStart: "deny";
+  legalChain: "allow";
+  selfcheck: "passed";
+  dailyConfigChanged: false;
+  cleanup: "passed";
+  artifactPresent: boolean;
+  reason?: string;
+}
+
 export interface ConformanceResult {
   status: "PASS";
-  reusedComponents: Array<"C7" | "C8" | "C9">;
+  reusedComponents: Array<"C7" | "C8" | "C9" | "C10">;
+  experimentalDshOutcome: DshConformanceEvidence["outcome"];
   checks: string[];
 }
 
@@ -31,9 +51,11 @@ export class ConformanceError extends Error {
 
 export function runConformance(
   evidenceInput: readonly HostConformanceEvidence[],
+  dshInput: Readonly<DshConformanceEvidence>,
   expectedProductVersion: string
 ): ConformanceResult {
   const evidence = structuredClone(evidenceInput);
+  const dsh = structuredClone(dshInput);
   const issues: string[] = [];
   const expected = new Map<SupportedHost, { component: "C7" | "C8" | "C9"; validation: HostConformanceEvidence["validation"] }>([
     ["codex", { component: "C7", validation: "real-isolated" }],
@@ -60,19 +82,45 @@ export function runConformance(
   for (const host of expected.keys()) {
     if (!observedHosts.has(host)) issues.push(`missing host evidence: ${host}`);
   }
+
+  coreIdentities.add(dsh.coreIdentity);
+  if (dsh.component !== "C10" || dsh.status !== "CLOSED") issues.push("DSH evidence must close C10");
+  if (dsh.productVersion !== expectedProductVersion) issues.push("DSH product version differs");
+  if (dsh.hostVersion !== "0.1.1-rc.2") issues.push("DSH host version is outside the experimental contract");
+  if (dsh.validation !== "real-isolated") issues.push("DSH validation label is inaccurate");
+  if (!dsh.artifactPresent || !dsh.profileBundleLoaded) issues.push("DSH artifact or Profile Bundle is absent");
+  if (dsh.dailyConfigChanged || dsh.cleanup !== "passed") issues.push("DSH isolation or cleanup contract failed");
+  if (dsh.outcome === "VERIFIED_COMPATIBLE") {
+    if (dsh.preStart !== "deny" || dsh.legalChain !== "allow" || dsh.selfcheck !== "passed") {
+      issues.push("DSH compatible claim lacks the required Guard chain");
+    }
+  } else if (!dsh.reason) {
+    issues.push("DSH incompatible claim requires a concrete reason");
+  }
+
   if (coreIdentities.size !== 1) issues.push("host artifacts do not share one core compatibility identity");
   if (issues.length > 0) throw new ConformanceError(issues);
 
+  const reusedComponents: ConformanceResult["reusedComponents"] = [
+    ...evidence.map((item) => item.component),
+    "C10"
+  ];
+  reusedComponents.sort();
+
   return {
     status: "PASS",
-    reusedComponents: evidence.map((item) => item.component).sort(),
+    reusedComponents,
+    experimentalDshOutcome: dsh.outcome,
     checks: [
-      "three-host-set",
+      "official-three-host-set",
       "product-version",
       "core-identity",
       "validation-labels",
       "guard-equivalence",
-      "artifact-presence"
+      "artifact-presence",
+      "experimental-dsh",
+      "isolation-cleanup"
     ]
   };
 }
+// SPDX-License-Identifier: MPL-2.0

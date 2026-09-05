@@ -4,3 +4,4 @@ interface:
   default_prompt: "Use $pre-loop-governor to prepare this project before implementation."
 policy:
   allow_implicit_invocation: true
+# SPDX-License-Identifier: MPL-2.0

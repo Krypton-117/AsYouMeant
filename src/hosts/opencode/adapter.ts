@@ -247,3 +247,4 @@ export function createOpenCodeHooks(
     }
   };
 }
+// SPDX-License-Identifier: MPL-2.0

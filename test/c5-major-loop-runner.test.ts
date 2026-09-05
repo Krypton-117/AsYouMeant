@@ -388,3 +388,4 @@ test("C5 turns an executor exception into failure evidence and stops in diagnost
   assert.match(Object.values(ledger.replay().evidence)[0]?.observation ?? "", /executor exploded/);
   assert.equal(ledger.replay().nodes.A?.status, "FAILED");
 });
+// SPDX-License-Identifier: MPL-2.0

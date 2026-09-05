@@ -74,3 +74,4 @@ export interface RunnerOutcome {
   guardDecision: GuardDecision | null;
   diagnosticOutcome: DiagnosticOutcome | null;
 }
+// SPDX-License-Identifier: MPL-2.0

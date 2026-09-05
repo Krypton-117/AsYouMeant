@@ -66,3 +66,4 @@ export interface EvidenceReport {
     permissionSource: string;
   };
 }
+// SPDX-License-Identifier: MPL-2.0
