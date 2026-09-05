@@ -1,0 +1,16 @@
+{
+  "host": "OpenCode",
+  "hostVersion": "1.18.18",
+  "package": "@opencode-ai/plugin@1.18.18",
+  "registration": "config.command",
+  "sourceRecognition": "command.execute.before",
+  "guard": "tool.execute.before",
+  "sourceKind": "opencode-command-transform",
+  "compatibilityMapping": "The frozen 1.18.18 package exposes command transforms without add/execute; its native config and command hook pair preserves the reviewed direct-command boundary without changing the user command or ordinary-prompt behavior.",
+  "sources": [
+    "https://github.com/anomalyco/opencode/blob/v1.18.18/packages/plugin/src/index.ts",
+    "https://github.com/anomalyco/opencode/blob/v1.18.18/packages/opencode/src/config/plugin.ts",
+    "https://github.com/anomalyco/opencode/blob/v1.18.18/packages/opencode/src/command/index.ts",
+    "https://github.com/anomalyco/opencode/blob/v1.18.18/packages/opencode/src/session/prompt.ts"
+  ]
+}

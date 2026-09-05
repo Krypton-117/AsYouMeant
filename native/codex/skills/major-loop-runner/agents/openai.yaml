@@ -1,0 +1,6 @@
+interface:
+  display_name: "Major-loop runner"
+  short_description: "Run one approved contract node at a time"
+  default_prompt: "Use $major-loop-runner start candidate=<contract-version> to run the reviewed contract."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,11 @@
+{
+  "hostPackage": "@anthropic-ai/claude-code@2.1.260",
+  "snapshot": "2026-09-04",
+  "mode": "contract-verified-not-real-host-tested",
+  "sources": [
+    "https://code.claude.com/docs/en/plugins-reference",
+    "https://code.claude.com/docs/en/hooks",
+    "https://code.claude.com/docs/en/slash-commands",
+    "https://www.npmjs.com/package/@anthropic-ai/claude-code"
+  ]
+}

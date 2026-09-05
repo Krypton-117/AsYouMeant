@@ -1,0 +1,20 @@
+{
+  "name": "asyoumeant",
+  "interface": {
+    "displayName": "AsYouMeant"
+  },
+  "plugins": [
+    {
+      "name": "asyoumeant",
+      "source": {
+        "source": "local",
+        "path": "./native/codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
