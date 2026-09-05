@@ -1,0 +1,7 @@
+interface:
+  display_name: "Post-loop curator"
+  short_description: "Retain evidence-backed Skill experience"
+  default_prompt: "Use $post-loop-curator after the AsYouMeant Product closes."
+policy:
+  allow_implicit_invocation: true
+# SPDX-License-Identifier: MPL-2.0

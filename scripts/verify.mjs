@@ -6,7 +6,7 @@ import { dirname, resolve } from "node:path";
 const nodeFlag = process.argv.indexOf("--node");
 const nodeId = nodeFlag >= 0 ? process.argv[nodeFlag + 1] : undefined;
 
-if (nodeFlag < 0 || !/^C(?:[1-9]|1[0-5])$/.test(nodeId ?? "")) {
+if (nodeFlag < 0 || !/^C(?:[1-9]|1[0-9]|2[01])$/.test(nodeId ?? "")) {
   console.error("Usage: pnpm verify --node C<n>, where n is an active Component id.");
   process.exit(2);
 }
@@ -26,7 +26,11 @@ const suites = {
   C12: "dist/test/c12-conformance-runner.test.js",
   C13: "dist/test/c13-acceptance-presenter.test.js",
   C14: "test/c14-license-compliance.test.mjs",
-  C15: "test/c15-bilingual-readme.test.mjs"
+  C15: "test/c15-bilingual-readme.test.mjs",
+  C16: "dist/test/c16-skill-pool.test.js",
+  C17: "dist/test/c17-task-local-skill.test.js",
+  C20: "dist/test/c20-skill-experience-store.test.js",
+  C21: "dist/test/c21-post-loop-curator.test.js"
 };
 const suite = suites[nodeId];
 

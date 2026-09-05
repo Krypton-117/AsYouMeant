@@ -9,15 +9,17 @@ import type {
   GuardDecision,
   MajorLoopPermit
 } from "../../guard/types.js";
+import { skillIsInPool } from "../../skills/pool.js";
 
 export const CLAUDE_CODE_VERSION = "2.1.260";
-export const CLAUDE_CONTRACT_SNAPSHOT = "2026-09-04";
+export const CLAUDE_CONTRACT_SNAPSHOT = "2026-09-06";
 export const CLAUDE_START_SOURCE = "claude-user-prompt-expansion" as const;
 
 export interface ClaudeRuntimeContract extends GuardConfig {
   activeWorkItemId: string;
   actionBasis: ActionBasis;
   permitDurationMs: number;
+  skillPool?: Parameters<typeof skillIsInPool>[0];
 }
 
 export interface ClaudeHookInput {
@@ -162,6 +164,13 @@ function exactExpansion(input: ClaudeHookInput, candidateVersion: string): boole
     input.prompt === startCommand(candidateVersion);
 }
 
+function requestedSkill(input: Readonly<ClaudeHookInput>): string {
+  if (String(input.tool_name || "").toLowerCase() !== "skill") return "";
+  if (!input.tool_input || typeof input.tool_input !== "object") return "";
+  const record = input.tool_input as Record<string, unknown>;
+  return String(record.name ?? record.skill ?? record.id ?? "");
+}
+
 export function handleClaudeHook(
   input: ClaudeHookInput,
   contract: ClaudeRuntimeContract,
@@ -205,6 +214,21 @@ export function handleClaudeHook(
   }
   if (input.hook_event_name !== "PreToolUse") {
     return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
+  }
+  const skillId = requestedSkill(input);
+  if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+    return {
+      output: {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "deny",
+          permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+        }
+      },
+      permit: store.read(sessionId),
+      decision: null,
+      sourceRecognized: false
+    };
   }
   const permit = store.read(sessionId);
   const decision = guard.decide({

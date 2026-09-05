@@ -9,6 +9,7 @@ import type {
   GuardDecision,
   MajorLoopPermit
 } from "../../guard/types.js";
+import { skillIsInPool } from "../../skills/pool.js";
 
 export const CODEX_CLI_VERSION = "0.144.3";
 export const CODEX_APP_VERSION = "26.825.6671.0";
@@ -18,6 +19,7 @@ export interface CodexRuntimeContract extends GuardConfig {
   activeWorkItemId: string;
   actionBasis: ActionBasis;
   permitDurationMs: number;
+  skillPool?: Parameters<typeof skillIsInPool>[0];
 }
 
 export interface CodexHookInput {
@@ -205,6 +207,13 @@ function context(event: "UserPromptSubmit" | "PreToolUse", text: string): CodexH
   return { hookSpecificOutput: { hookEventName: event, additionalContext: text } };
 }
 
+function requestedSkill(input: Readonly<CodexHookInput>): string {
+  if (String(input.tool_name || "").toLowerCase() !== "skill") return "";
+  if (!input.tool_input || typeof input.tool_input !== "object") return "";
+  const record = input.tool_input as Record<string, unknown>;
+  return String(record.name ?? record.skill ?? record.id ?? "");
+}
+
 export function handleCodexHook(
   input: CodexHookInput,
   contract: CodexRuntimeContract,
@@ -245,6 +254,22 @@ export function handleCodexHook(
 
   if (input.hook_event_name !== "PreToolUse") {
     return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
+  }
+
+  const skillId = requestedSkill(input);
+  if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+    return {
+      output: {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "deny",
+          permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+        }
+      },
+      permit: store.read(sessionId),
+      decision: null,
+      sourceRecognized: false
+    };
   }
 
   const permit = store.read(sessionId);

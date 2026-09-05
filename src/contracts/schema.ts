@@ -60,6 +60,27 @@ export const contractCandidateSchema = {
     unresolvedItems: {
       type: "array",
       items: { $ref: "#/$defs/unresolvedItem" }
+    },
+    skillPool: {
+      type: "object",
+      additionalProperties: false,
+      required: ["entries"],
+      properties: {
+        entries: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["skillId", "status", "ownership", "explicitOnly"],
+            properties: {
+              skillId: { $ref: "#/$defs/nonEmptyString" },
+              status: { enum: ["in-pool", "out-of-pool"] },
+              ownership: { enum: ["managed", "external"] },
+              explicitOnly: { type: "boolean" }
+            }
+          }
+        }
+      }
     }
   },
   $defs: {

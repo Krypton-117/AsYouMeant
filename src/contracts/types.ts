@@ -1,3 +1,5 @@
+import type { SkillPoolContractProjection } from "../skills/types.js";
+
 export type NodeKind = "component" | "module" | "product";
 export type EdgeKind = "ASSEMBLES" | "REQUIRES";
 export type AcceptanceMode = 1 | 2 | 3;
@@ -139,6 +141,7 @@ export interface ContractCandidate {
   plannedWork: PlannedWork[];
   intentTerms: IntentTerm[];
   unresolvedItems: UnresolvedItem[];
+  skillPool?: SkillPoolContractProjection;
 }
 
 export interface NodeCard extends ContractNode {
@@ -177,6 +180,7 @@ export interface CompiledContract {
     workItemIds: string[];
   }>;
   unresolvedItems: UnresolvedItem[];
+  skillPool?: SkillPoolContractProjection;
 }
 
 export type IntentMatch =
