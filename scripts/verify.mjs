@@ -13,7 +13,11 @@ if (nodeFlag < 0 || !/^C(?:[1-9]|1[0-3])$/.test(nodeId ?? "")) {
 
 const suites = {
   C1: "dist/test/c1-contract-compiler.test.js",
-  C2: "dist/test/c2-evidence-resolver.test.js"
+  C2: "dist/test/c2-evidence-resolver.test.js",
+  C3: "dist/test/c3-state-ledger.test.js",
+  C4: "dist/test/c4-guard.test.js",
+  C5: "dist/test/c5-major-loop-runner.test.js",
+  C6: "dist/test/c6-diagnostic-kernel.test.js"
 };
 const suite = suites[nodeId];
 

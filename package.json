@@ -17,6 +17,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "demo:m2": "node scripts/demo-m2.mjs",
     "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
