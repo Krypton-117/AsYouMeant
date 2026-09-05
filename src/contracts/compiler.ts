@@ -42,6 +42,16 @@ function duplicateIds(values: Array<{ id: string }>, label: string): string[] {
   return [...duplicates].map((id) => `${label} id is duplicated: ${id}`);
 }
 
+function duplicateStrings(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const value of values) {
+    if (seen.has(value)) duplicates.add(value);
+    seen.add(value);
+  }
+  return [...duplicates].sort();
+}
+
 function findCycle(nodeIds: string[], edges: ContractEdge[]): string[] | undefined {
   const adjacency = new Map(nodeIds.map((id) => [id, [] as string[]]));
   for (const edge of edges) adjacency.get(edge.from)?.push(edge.to);
@@ -89,6 +99,12 @@ function domainIssues(candidate: ContractCandidate): string[] {
     candidate.requirements.map((requirement) => [requirement.id, requirement])
   );
   const work = new Map(candidate.plannedWork.map((item) => [item.id, item]));
+  if (candidate.skillPool) {
+    const skillIds = candidate.skillPool.entries.map((entry) => entry.skillId);
+    for (const skillId of duplicateStrings(skillIds)) {
+      issues.push(`skill pool entry is duplicated: ${skillId}`);
+    }
+  }
 
   const products = candidate.nodes.filter((node) => node.kind === "product");
   if (products.length !== 1) issues.push(`expected exactly one Product, found ${products.length}`);
@@ -305,7 +321,8 @@ export function compile(candidateInput: unknown): CompiledContract {
       execution: clone(card.execution),
       workItemIds: [...card.workItemIds]
     })),
-    unresolvedItems: [...candidate.unresolvedItems].sort(byId)
+    unresolvedItems: [...candidate.unresolvedItems].sort(byId),
+    ...(candidate.skillPool ? { skillPool: clone(candidate.skillPool) } : {})
   };
 }
 

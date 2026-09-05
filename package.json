@@ -1,6 +1,6 @@
 {
   "name": "asyoumeant",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Contract-governed development loops aligned to explicit user intent.",
   "private": true,
   "type": "module",
@@ -21,7 +21,8 @@
     "demo:m2": "node scripts/demo-m2.mjs",
     "probe:dsh": "node scripts/probe-dsh.mjs",
     "release:check": "node scripts/release-check.mjs",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "verify:0.3": "pnpm build && node --test dist/test/c16-skill-pool.test.js dist/test/c17-task-local-skill.test.js dist/test/c20-skill-experience-store.test.js dist/test/c21-post-loop-curator.test.js"
   },
   "dependencies": {
     "ajv": "8.20.0"

@@ -74,6 +74,8 @@ export function prepareOpenCodePluginPackage(repositoryRoot: string, packageRoot
   requireChild(packageRoot, repositoryRoot, "OpenCode package root");
   const files = [
     [join(repositoryRoot, "dist", "src", "guard", "guard.js"), join(packageRoot, "dist", "src", "guard", "guard.js")],
+    [join(repositoryRoot, "dist", "src", "skills", "pool.js"), join(packageRoot, "dist", "src", "skills", "pool.js")],
+    [join(repositoryRoot, "dist", "src", "hosts", "skill-pool.js"), join(packageRoot, "dist", "src", "hosts", "skill-pool.js")],
     [join(repositoryRoot, "dist", "src", "hosts", "opencode", "adapter.js"), join(packageRoot, "dist", "src", "hosts", "opencode", "adapter.js")]
   ] as const;
   for (const [source, target] of files) {
@@ -173,7 +175,7 @@ export async function selfcheckOpenCodePlugin(options: OpenCodeLifecycleOptions)
   const place = locations(options);
   const version = cliVersion(options);
   const commandRegistered = await hostRegistersCommand(options);
-  const skillNames = ["pre-loop-governor", "evidence-research", "major-loop-runner", "diagnostic-kernel"];
+  const skillNames = ["pre-loop-governor", "evidence-research", "major-loop-runner", "diagnostic-kernel", "post-loop-curator"];
   const result: OpenCodeSelfcheckResult = {
     cliVersion: version,
     pluginInstalled: existsSync(place.pluginPath) && existsSync(join(place.runtimeRoot, "dist", "src", "hosts", "opencode", "adapter.js")),
@@ -195,7 +197,7 @@ export function uninstallOpenCodePlugin(options: OpenCodeLifecycleOptions): void
   const targets = [
     place.pluginPath,
     place.runtimeRoot,
-    ...["pre-loop-governor", "evidence-research", "major-loop-runner", "diagnostic-kernel"]
+    ...["pre-loop-governor", "evidence-research", "major-loop-runner", "diagnostic-kernel", "post-loop-curator"]
       .map((name) => join(place.skillRoot, name))
   ];
   for (const target of targets) {

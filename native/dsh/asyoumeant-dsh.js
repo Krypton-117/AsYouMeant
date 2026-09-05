@@ -12,28 +12,71 @@ export const name = "asyoumeant-dsh";
 export const inject = ["skills", "tools"];
 
 const providerName = "asyoumeant-dsh";
-const skillUrl = new URL("./skills/asyoumeant-major-loop-runner/SKILL.md", import.meta.url);
-const resourceBase = {
-  kind: "directory",
-  path: fileURLToPath(new URL("./skills/asyoumeant-major-loop-runner/", import.meta.url))
-};
-const candidate = {
-  name: DSH_SKILL_NAME,
-  description: "Use when the user explicitly starts or resumes a DSH task governed by a reviewed AsYouMeant contract.",
-  invocation: { modelInvocable: false, userInvocable: true },
-  provider: providerName,
-  source: "bundled",
-  resourceBase,
-  rank: 600,
-  locator: skillUrl
-};
+const skillSpecs = [
+  {
+    name: "pre-loop-governor",
+    description: "Prepare an AsYouMeant development contract through detailed intent discussion before implementation begins.",
+    invocation: { modelInvocable: true, userInvocable: true }
+  },
+  {
+    name: "evidence-research",
+    description: "Resolve one named technical uncertainty for a contracted consumer using high-trust primary evidence.",
+    invocation: { modelInvocable: true, userInvocable: true }
+  },
+  {
+    name: DSH_SKILL_NAME,
+    description: "Use when the user explicitly starts or resumes a DSH task governed by a reviewed AsYouMeant contract.",
+    invocation: { modelInvocable: false, userInvocable: true }
+  },
+  {
+    name: "diagnostic-kernel",
+    description: "Diagnose a contracted failure with one evidence-bound, discriminating probe and a fixed retry budget.",
+    invocation: { modelInvocable: true, userInvocable: true }
+  },
+  {
+    name: "post-loop-curator",
+    description: "Use when an AsYouMeant Product has closed and the task has evaluable evidence from Skills used during the task.",
+    invocation: { modelInvocable: true, userInvocable: false }
+  }
+].map((spec) => {
+  const directoryUrl = new URL(`./skills/${spec.name}/`, import.meta.url);
+  return {
+    ...spec,
+    provider: providerName,
+    source: "bundled",
+    resourceBase: { kind: "directory", path: fileURLToPath(directoryUrl) },
+    rank: 600,
+    locator: new URL("SKILL.md", directoryUrl)
+  };
+});
+
+async function poolEntries(cwd) {
+  try {
+    const path = process.env.ASYOUMEANT_CONTRACT_PATH
+      ?? join(cwd ?? process.cwd(), ".asyoumeant", "contract.json");
+    const contract = JSON.parse(await readFile(path, "utf8"));
+    return Array.isArray(contract?.skillPool?.entries) ? contract.skillPool.entries : null;
+  } catch {
+    return null;
+  }
+}
+
 const provider = {
   name: providerName,
-  list: () => Promise.resolve([candidate]),
-  async get() {
+  async list(options = {}) {
+    const entries = await poolEntries(options.cwd);
+    if (!entries) return skillSpecs;
+    const active = new Set(entries
+      .filter((entry) => entry?.status === "in-pool")
+      .map((entry) => entry.skillId));
+    return skillSpecs.filter((candidate) => active.has(candidate.name));
+  },
+  async get(candidate) {
+    const current = skillSpecs.find((entry) => entry.name === candidate.name);
+    if (!current) return undefined;
     return {
-      ...candidate,
-      content: await readFile(skillUrl, "utf8")
+      ...current,
+      content: await readFile(current.locator, "utf8")
     };
   }
 };
@@ -68,7 +111,8 @@ async function readContract(agent) {
       candidateVersion: parsed.candidateVersion,
       projectionIdentity: parsed.projectionIdentity,
       allowedTools,
-      permitDurationMs
+      permitDurationMs,
+      skillPoolEntries: Array.isArray(parsed?.skillPool?.entries) ? parsed.skillPool.entries : null
     };
   } catch {
     return null;
@@ -102,9 +146,14 @@ function activePermit(permits, agent, contract) {
 
 export function apply(ctx) {
   const permits = new WeakMap();
-  ctx.skills.registerProvider(() => provider);
+  let invalidateSkillPool = () => undefined;
+  const disposeSkillProvider = ctx.skills.registerProvider((control) => {
+    invalidateSkillPool = control.invalidate;
+    return provider;
+  });
 
   ctx.on("agent/pre-step", async ({ agent, messages }, next) => {
+    invalidateSkillPool();
     const decision = await next();
     if (decision.kind === "reject") return decision;
     const contract = await readContract(agent);
@@ -123,6 +172,17 @@ export function apply(ctx) {
   }, { prepend: true });
 
   ctx.on("tools/pre-execute", async (exec, next) => {
+    if (exec.name === "skill") {
+      const contract = await readContract(exec.agent);
+      const requested = String(exec.args?.name ?? exec.args?.skill ?? "");
+      if (requested && contract?.skillPoolEntries) {
+        const active = contract.skillPoolEntries.some(
+          (entry) => entry?.skillId === requested && entry?.status === "in-pool"
+        );
+        if (!active) return { kind: "deny", reason: `SKILL_OUT_OF_POOL: ${requested}` };
+      }
+      return next();
+    }
     if (readOnlyTools.has(exec.name)) return next();
     const contract = await readContract(exec.agent);
     if (!activePermit(permits, exec.agent, contract)) {
@@ -164,4 +224,6 @@ export function apply(ctx) {
       };
     }
   });
+
+  return disposeSkillProvider;
 }

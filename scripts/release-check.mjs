@@ -4,8 +4,8 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { extname, join, relative, resolve } from "node:path";
 
-const PRODUCT_VERSION = "0.2.0";
-const CANDIDATE = "2026-09-05.2";
+const PRODUCT_VERSION = "0.3.0";
+const CANDIDATE = "2026-09-06.1";
 const SPDX = "SPDX-License-Identifier: MPL-2.0";
 const SOURCE_EXTENSIONS = new Set([".ts", ".js", ".mjs", ".cjs", ".yml", ".yaml"]);
 const ignoredDirectory = (root, directory, name) =>
@@ -103,12 +103,17 @@ export function auditReadmes(rootInput) {
   const english = readText(root, "README.md", failures);
   const chinese = readText(root, "README.zh-CN.md", failures);
   const shared = [
-    "0.2.0",
+    "0.3.0",
+    "0.2.0 → 0.3.0",
     "Component",
     "Module",
     "Product",
     "pre-loop",
     "major-loop",
+    "post-loop",
+    "Skill pool",
+    "task-local",
+    "skill-experience.md",
     "pnpm demo:m2",
     "MPL-2.0",
     "THIRD_PARTY_NOTICES.md",
@@ -157,6 +162,19 @@ export function auditRelease(rootInput = process.cwd()) {
   if (dshEvidence?.hostVersion !== "0.1.1-rc.2" || !["VERIFIED_COMPATIBLE", "VERIFIED_INCOMPATIBLE"].includes(dshEvidence?.outcome)) {
     failures.push("DSH evidence must contain the exact experimental version and conclusion");
   }
+  const poolConformance = readJson(root, "native/CHANGE-CONFORMANCE-0.3.0.json", failures);
+  const poolComponents = [
+    ...(Array.isArray(poolConformance?.testedComponents) ? poolConformance.testedComponents : []),
+    ...(Array.isArray(poolConformance?.staticComponents) ? poolConformance.staticComponents : [])
+  ].map((component) => component?.id);
+  if (
+    poolConformance?.candidate !== CANDIDATE ||
+    poolConformance?.productVersion !== PRODUCT_VERSION ||
+    !["C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27"]
+      .every((id) => poolComponents.includes(id))
+  ) {
+    failures.push("0.3.0 Skill pool conformance trace is incomplete");
+  }
 
   const secretPattern = /(sk-[a-z0-9]{16,}|bearer\s+[a-z0-9._-]{16,}|(api[_-]?key|token|password)\s*[:=]\s*["']?[a-z0-9._-]{20,})/i;
   walkFiles(root, root, (path) => {
@@ -173,7 +191,7 @@ export function auditRelease(rootInput = process.cwd()) {
     productVersion: product?.version ?? null,
     artifacts: ["codex", "claude-code", "opencode"],
     experimentalArtifact: "dsh@0.1.1-rc.2",
-    checked: ["git repository", "release inputs", "secret-shaped text", "MPL-2.0", "upstream MIT notices", "artifact versions", "bilingual README", "DSH evidence"],
+    checked: ["git repository", "release inputs", "secret-shaped text", "MPL-2.0", "upstream MIT notices", "artifact versions", "bilingual README", "DSH evidence", "0.3.0 Skill pool conformance"],
     status: failures.length === 0 ? "PASS" : "FAIL",
     failures: [...new Set(failures)].sort()
   };

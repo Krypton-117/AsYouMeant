@@ -1,8 +1,9 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Guard } from "../../guard/guard.js";
+import { skillIsInPool } from "../../skills/pool.js";
 export const CLAUDE_CODE_VERSION = "2.1.260";
-export const CLAUDE_CONTRACT_SNAPSHOT = "2026-09-04";
+export const CLAUDE_CONTRACT_SNAPSHOT = "2026-09-06";
 export const CLAUDE_START_SOURCE = "claude-user-prompt-expansion";
 export class MemoryClaudePermitStore {
     #permits = new Map();
@@ -101,6 +102,14 @@ function exactExpansion(input, candidateVersion) {
         input.command_args === startArgs(candidateVersion) &&
         input.prompt === startCommand(candidateVersion);
 }
+function requestedSkill(input) {
+    if (String(input.tool_name || "").toLowerCase() !== "skill")
+        return "";
+    if (!input.tool_input || typeof input.tool_input !== "object")
+        return "";
+    const record = input.tool_input;
+    return String(record.name ?? record.skill ?? record.id ?? "");
+}
 export function handleClaudeHook(input, contract, store) {
     const sessionId = String(input.session_id || "");
     const guard = new Guard(contract);
@@ -140,6 +149,21 @@ export function handleClaudeHook(input, contract, store) {
     }
     if (input.hook_event_name !== "PreToolUse") {
         return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
+    }
+    const skillId = requestedSkill(input);
+    if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+        return {
+            output: {
+                hookSpecificOutput: {
+                    hookEventName: "PreToolUse",
+                    permissionDecision: "deny",
+                    permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+                }
+            },
+            permit: store.read(sessionId),
+            decision: null,
+            sourceRecognized: false
+        };
     }
     const permit = store.read(sessionId);
     const decision = guard.decide({

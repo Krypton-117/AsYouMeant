@@ -94,10 +94,43 @@ export {
   uninstallDshPlugin
 } from "./hosts/dsh/lifecycle.js";
 export type * from "./hosts/dsh/lifecycle.js";
-export { reviewGate } from "./conformance/reviewer.js";
+export {
+  ChangeReviewError,
+  reviewChange,
+  reviewGate
+} from "./conformance/reviewer.js";
 export type * from "./conformance/reviewer.js";
+export { assessTestFirstEvidence } from "./conformance/test-first.js";
+export type * from "./conformance/test-first.js";
 export { ConformanceError, runConformance } from "./conformance/runner.js";
 export type * from "./conformance/runner.js";
 export { presentAcceptance } from "./conformance/presenter.js";
 export type * from "./conformance/presenter.js";
+export {
+  SkillPool,
+  SkillPoolError,
+  skillIsInPool,
+  skillCompatibilityIssues,
+  validateSkillDefinition
+} from "./skills/pool.js";
+export {
+  renderTaskLocalSkill,
+  TaskLocalSkillCompiler,
+  TaskLocalSkillError
+} from "./skills/compiler.js";
+export type * from "./skills/types.js";
+export {
+  defaultSkillExperiencePath,
+  SkillExperienceStore
+} from "./post-loop/experience-store.js";
+export { PostLoopCurator } from "./post-loop/curator.js";
+export type * from "./post-loop/types.js";
+export {
+  openCodeSkillIsInPool,
+  projectClaudeSkillPool,
+  projectCodexSkillPool,
+  projectDshSkillPool,
+  projectOpenCodeSkillPool
+} from "./hosts/skill-pool.js";
+export type * from "./hosts/skill-pool.js";
 // SPDX-License-Identifier: MPL-2.0

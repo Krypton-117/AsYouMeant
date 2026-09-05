@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { Guard } from "../../guard/guard.js";
+import { skillIsInPool } from "../../skills/pool.js";
 export const CODEX_CLI_VERSION = "0.144.3";
 export const CODEX_APP_VERSION = "26.825.6671.0";
 export const CODEX_START_SOURCE = "codex-user-prompt-submit";
@@ -153,6 +154,14 @@ function toGuardAction(input, contract) {
 function context(event, text) {
     return { hookSpecificOutput: { hookEventName: event, additionalContext: text } };
 }
+function requestedSkill(input) {
+    if (String(input.tool_name || "").toLowerCase() !== "skill")
+        return "";
+    if (!input.tool_input || typeof input.tool_input !== "object")
+        return "";
+    const record = input.tool_input;
+    return String(record.name ?? record.skill ?? record.id ?? "");
+}
 export function handleCodexHook(input, contract, store) {
     const sessionId = String(input.session_id || "");
     const guard = new Guard(contract);
@@ -187,6 +196,21 @@ export function handleCodexHook(input, contract, store) {
     }
     if (input.hook_event_name !== "PreToolUse") {
         return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
+    }
+    const skillId = requestedSkill(input);
+    if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+        return {
+            output: {
+                hookSpecificOutput: {
+                    hookEventName: "PreToolUse",
+                    permissionDecision: "deny",
+                    permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+                }
+            },
+            permit: store.read(sessionId),
+            decision: null,
+            sourceRecognized: false
+        };
     }
     const permit = store.read(sessionId);
     const decision = guard.decide({

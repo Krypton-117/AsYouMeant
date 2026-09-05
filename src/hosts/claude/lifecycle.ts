@@ -27,6 +27,7 @@ export function prepareClaudePluginPackage(repositoryRoot: string, packageRoot: 
   requireChild(packageRoot, repositoryRoot);
   const files = [
     [join(repositoryRoot, "dist", "src", "guard", "guard.js"), join(packageRoot, "dist", "src", "guard", "guard.js")],
+    [join(repositoryRoot, "dist", "src", "skills", "pool.js"), join(packageRoot, "dist", "src", "skills", "pool.js")],
     [join(repositoryRoot, "dist", "src", "hosts", "claude", "adapter.js"), join(packageRoot, "dist", "src", "hosts", "claude", "adapter.js")]
   ] as const;
   for (const [source, target] of files) {
@@ -48,7 +49,7 @@ export function verifyClaudePluginContract(packageRoot: string): ClaudeContractV
   const result: ClaudeContractVerification = {
     hostVersion: CLAUDE_CODE_VERSION,
     contractSnapshot: CLAUDE_CONTRACT_SNAPSHOT,
-    manifest: manifest.name === "asyoumeant" && manifest.version === "0.2.0" && manifest.hooks === "./hooks/hooks.json",
+    manifest: manifest.name === "asyoumeant" && manifest.version === "0.3.0" && manifest.hooks === "./hooks/hooks.json",
     namespacedSkill: expansion?.matcher === "asyoumeant:major-loop-runner",
     userOnlyStart: /disable-model-invocation:\s*true/.test(skill),
     sourceHook: Boolean(expansion),

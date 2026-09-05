@@ -1,8 +1,8 @@
 [English](README.md)
 
-# AsYouMeant 0.2.0
+# AsYouMeant 0.3.0
 
-AsYouMeant 是一个以合同约束编程 Agent 的插件。它把“你想要什么”的对话整理成经过审查的开发合同；在你明确开工前锁住实现；并按照你为每个交付节点选择的方式完成验收。
+AsYouMeant 是一个以合同约束编程 Agent 的插件。它把“你想要什么”的对话整理成经过审查的开发合同；在你明确开工前锁住实现；只为当前工作选择必要的 Skill；并按照你为每个交付节点选择的方式完成验收。
 
 <!-- BEGINNER_GUIDE -->
 ## 零基础指南
@@ -16,23 +16,24 @@ AsYouMeant 是一个以合同约束编程 Agent 的插件。它把“你想要�
 3. Agent 自行检查技术细节，只把确实需要你决定的冲突交给你。
 4. 活文档通过审查且你亲自发送精确 major-loop 启动命令之前，实现始终锁定。
 5. 工作按照 Component、可选的多层 Module 和唯一最终 Product 逐级开发、组装与验收。
+6. Product 关闭后，独立 post-loop 可以保留本次真正有用的 Skill 证据。
 
 你不需要阅读源码，不需要懂测试框架，也不必准确记住技术名词。你只需审核实现意图、功能、可见效果、验收选择和外部影响。
 
 ### 它适合谁？
 
 - 希望 Agent 解释决定，并给出简短、可见验收步骤的零基础用户。
-- 需要意图追溯、执行边界、证据复用和确定性 Guard 裁决的专业开发者。
+- 需要意图追溯、执行边界、动态 Skill 选择、证据复用和确定性 Guard 裁决的专业开发者。
 - 使用 Codex、Claude Code 或 OpenCode 的团队。DSH 仅为绑定一个精确版本的实验支持。
 
 ### 支持状态
 
-| 宿主 | 状态 | 已验证证据 |
+| 宿主 | 状态 | 证据边界 |
 | --- | --- | --- |
-| Codex Windows App `26.825.6671.0` / CLI `0.144.3` | 正式支持 | C7 已完成真实隔离安装、Guard 链路、自检和卸载 |
-| Claude Code `2.1.260` | 正式支持 | C8 已完成官方规范对照和自动包合同检查；未在真实 Claude Code 宿主中测试 |
-| OpenCode `1.18.18` | 正式支持 | C9 已完成真实隔离安装、原生命令注册、Guard 链路、自检和卸载 |
-| DSH `0.1.1-rc.2` | 实验性 | C10 真实隔离生命周期结论为 `VERIFIED_COMPATIBLE`；结论不外推到其他 DSH 版本 |
+| Codex Windows App `26.825.6671.0` / CLI `0.144.3` | 正式支持 | 保留 0.2 真实隔离生命周期证据；0.3 Skill pool 静态追溯到当前 Codex Skill 元数据与合同 Guard |
+| Claude Code `2.1.260` | 正式支持 | 保留 0.2 官方合同检查；不声称完成真实 Claude Code 宿主测试；0.3 使用文档化 Skill 设置和合同 Guard |
+| OpenCode `1.18.18` | 正式支持 | 保留 0.2 真实隔离生命周期证据；0.3 在不替换既有入口的情况下增加当前 V2 Skill transform、reload 和 permission hook |
+| DSH `0.1.1-rc.2` | 实验性 | 0.2 精确版本结论为 `VERIFIED_COMPATIBLE`；0.3 只做静态追溯，不保证 DSH 或其他版本的兼容性 |
 
 ### 安装前准备
 
@@ -110,6 +111,12 @@ dsh plugin --profile <profile> add ./native/dsh
 
 活文档是唯一权威。由它生成的合同、账本、验收包和任务专用 Skill 都只是投影，不能自行增加权限。实现前，独立只读门禁会检查意图、权限、技术可行性和内部逻辑。审查失败只返回简洁的冲突报告，不会偷偷开工。
 
+### Skill pool 如何工作
+
+AsYouMeant 会先寻找符合当前意图、能力、允许动作、资源和具名消费者的已有 Skill。匹配的 Skill 进入当前逻辑 Skill pool；失去全部消费者后出池，但不会被删除，以便以后重新复核并复用。
+
+没有已有 Skill 可用时，Agent 只能为具名的上下文溢出恢复、技术栈故障或可预见的可复用开发循环创建 task-local Skill。它必须严格绑定当前合同、消费者、输入输出、完成标准、允许动作和资源。宿主支持时使用原生物理隐藏；所有宿主都由合同 Guard 提供逻辑隔离。
+
 ### 启动 major-loop
 
 门禁通过后，Agent 会给出精确候选版本。把下表的 `<contract-version>` 替换成该值，并由你亲自输入命令：
@@ -123,6 +130,10 @@ dsh plugin --profile <profile> add ./native/dsh
 
 普通的“继续”、旧候选命令，或者门禁通过前发送的命令，都不得启动实现。
 
+### Product 关闭后会发生什么？
+
+如果本次任务留下了实际使用 Skill 的有效证据，`post-loop-curator` 会在 Product 验收关闭后运行一次。它只在证据改变结论时更新用户级共享 Markdown 文件 `~/.asyoumeant/skill-experience.md`。这份文件帮助未来 pre-loop 和 major-loop 选 Skill，但无权许可、限制、执行、入池或验收工作。curator 不会修改已交付 Product，也不会阻塞交付；没有可评价证据时不做任何写入。
+
 ### 成功时你会看见什么？
 
 - 精确启动前，所有实现动作都会被拒绝。
@@ -131,7 +142,7 @@ dsh plugin --profile <profile> add ./native/dsh
 - 除非 pre-loop 已明确批准该节点自动验收，否则程序效果和关键链路必须展示给你。
 - 动作失败时会给出具体原因和下一步，而不是无限重试。
 
-运行下面的安全本地演示：
+运行下面保留的 0.2 基线安全演示：
 
 ```text
 pnpm demo:m2
@@ -158,7 +169,7 @@ Claude Code：
 claude plugin uninstall asyoumeant@asyoumeant --scope user
 ```
 
-OpenCode：删除 `.opencode/plugins/asyoumeant.js`、`.opencode/asyoumeant-runtime/`，以及 `.opencode/skills/` 下的四个 AsYouMeant 目录：`pre-loop-governor`、`major-loop-runner`、`diagnostic-kernel` 和 `evidence-research`。
+OpenCode：删除 `.opencode/plugins/asyoumeant.js`、`.opencode/asyoumeant-runtime/`，以及 `.opencode/skills/` 下的五个 AsYouMeant 目录：`pre-loop-governor`、`major-loop-runner`、`diagnostic-kernel`、`evidence-research` 和 `post-loop-curator`。
 
 DSH：
 
@@ -175,14 +186,17 @@ AsYouMeant 只把一份经过审查的活文档视为规范来源。合同编译
 
 稳定核心刻意只保留合同编译、证据解析、可重放状态、Guard 与许可裁决、major-loop 执行、有界诊断、独立审查、一致性检查和薄宿主适配器。上游框架只贡献精选能力，不会变成强制的普适工作流。本项目不强加通用 TDD、规划、评审、Git、委派和发布循环。
 
-四个稳定 Skill 是：
+五个稳定 Skill 是：
 
 - `pre-loop-governor`：推断、确认和维护合同，同时保持实现锁定。
 - `major-loop-runner`：只有宿主原生启动来源创建有效许可后，才执行当前批准投影。
 - `diagnostic-kernel`：针对已有失败，用明确假设和有预算的区分性探针定位问题。
 - `evidence-research`：只为具名决定或已批准研究任务收集高可信一手证据。
+- `post-loop-curator`：Product 关闭后保留本次实际使用 Skill 的变化结论，并从逻辑池移除已关闭消费者。
 
-只有存在可预见、可复用且有具名消费者的循环时，才能现场创建任务专用工作 Skill。它必须绑定当前意图、输入输出、允许动作、资源、完成标准和失效条件；最后一个消费者关闭后即失效。
+只有具名的上下文溢出恢复、技术栈故障或可预见的可复用循环才允许现场创建 task-local Skill。它必须绑定当前意图、消费者、输入输出、允许动作、资源、完成标准和失效条件；最后一个消费者关闭后出池，但保留文件。
+
+共享的 `~/.asyoumeant/skill-experience.md` 只是参考证据，不是策略文件。它记录适合的任务类型、实际影响、适合与不适合场景、改进建议，以及同类 Skill 的有效差异。pre-loop 和 major-loop 可以参考它，只有经过审查的活文档能够控制工作。
 
 ### Component—Module—Product 模型
 
@@ -204,12 +218,12 @@ Guard 检查文件、依赖、测试、重试、网络、委派、外部写入�
 
 ### 宿主适配与证据
 
-| 适配器 | 原生启动接缝 | Guard 接缝 | 证据 |
+| 适配器 | 原生启动接缝 | Skill pool 接缝 | 证据 |
 | --- | --- | --- | --- |
-| Codex | `UserPromptSubmit` 与显式 Skill 调用 | 原生 pre-tool hook | C7 真实隔离生命周期 |
-| Claude Code | 命名空间 `UserPromptExpansion` | `PreToolUse` | [C8 合同证据](native/claude/CONTRACT-EVIDENCE.json) |
-| OpenCode | 注册命令及 `command.execute.before` | `tool.execute.before` | [C9 合同证据](native/opencode/CONTRACT-EVIDENCE.json)及真实隔离生命周期 |
-| DSH `0.1.1-rc.2` | 显式调用随包 Skill | `tools/pre-execute` | [C10 真实证据](native/dsh/CONTRACT-EVIDENCE.json) |
+| Codex | `UserPromptSubmit` 与显式 Skill 调用 | `agents/openai.yaml` 元数据和 `PreToolUse` 逻辑 Guard | C7 真实隔离生命周期及 [0.3 变更追溯](native/CHANGE-CONFORMANCE-0.3.0.json) |
+| Claude Code | 命名空间 `UserPromptExpansion` | 适用时使用 `skillOverrides`，插件/外部 Skill 使用 `PreToolUse` | [C8 合同证据](native/claude/CONTRACT-EVIDENCE.json)及 [0.3 变更追溯](native/CHANGE-CONFORMANCE-0.3.0.json) |
+| OpenCode | 注册命令；既有 hook 入口与 V2 command transform | V2 Skill transform、prompt reload、permission hook 和 tool Guard | [C9 合同证据](native/opencode/CONTRACT-EVIDENCE.json)及 [0.3 变更追溯](native/CHANGE-CONFORMANCE-0.3.0.json) |
+| DSH `0.1.1-rc.2` | 显式调用随包 Skill | provider 过滤、失效、注销和调用 Guard | [C10 真实证据](native/dsh/CONTRACT-EVIDENCE.json)及 [0.3 变更追溯](native/CHANGE-CONFORMANCE-0.3.0.json) |
 
 Codex、Claude Code 和 OpenCode 构成正式三宿主集合。DSH 是独立 Profile Bundle，不是核心依赖；即使精确版本探针兼容，也必须继续标为实验性。
 
@@ -222,6 +236,8 @@ src/state/           追加式账本与重放
 src/guard/           确定性策略与许可检查
 src/runner/          节点执行、检查点与控制
 src/diagnostics/     有界失败诊断
+src/skills/          动态 Skill pool 与 task-local Skill 编译
+src/post-loop/       参考性 Skill 经验与 post-loop 整理
 src/hosts/           薄宿主适配器与生命周期检查
 src/conformance/     独立审查与发布投影
 native/              可安装宿主包
@@ -237,14 +253,18 @@ scripts/             验证、演示、探针与发布检查
 pnpm install --frozen-lockfile
 pnpm build
 pnpm verify --node C<n>
+pnpm verify:0.3
 pnpm conformance
 pnpm demo:m2
 pnpm release:check
 ```
 
-`pnpm verify --node C<n>` 运行指定 Component 的验收套件；`pnpm conformance` 验证组装后的宿主矩阵；`pnpm release:check` 检查发布输入、版本、双语文档、DSH 证据、疑似密钥文本和许可证义务。
+`pnpm verify:0.3` 只运行本版本获准的 C16/C17 Skill pool 测试与 C20/C21 经验文档测试。0.2 宿主生命周期证据直接复用，不重新执行。`pnpm verify --node C<n>` 仍可运行具名的旧版或 0.3 可测试 Component；`pnpm conformance`、演示和完整宿主检查不属于 0.3 验收。`pnpm release:check` 静态检查发布输入、版本、双语文档、DSH 证据、疑似密钥文本和许可证义务。
+
+### 从 0.2.0 → 0.3.0 迁移
+
+重新构建并安装同一个宿主包即可。`skillPool` 是可选字段，因此既有合同仍然有效；需要动态选择时再增加 `skillPool.entries` 投影。没有该投影时，既有启动命令和 0.2 Guard 接缝保持不变。稳定 Skill 从四个增加为五个；task-local Skill 出池后保留文件；已完成的 Product 可以更新只读参考的 `skill-experience.md`。本版本没有增加运行依赖。
 
 ### 许可证与上游归属
 
 AsYouMeant 自有源码采用 [MPL-2.0](LICENSE)。MPL-2.0 义务作用于受覆盖文件；项目不会把独立的 MIT 上游材料重新声明为 MPL-2.0。精选或改编自 Superpowers `6.3.0`、Stop That Shit `0.2.0` 和 Matt Pocock Skills manifest `1.2.3` 的内容，在 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 中保留归属和 MIT 条款。
-

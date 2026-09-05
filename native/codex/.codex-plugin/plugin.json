@@ -1,6 +1,6 @@
 {
   "name": "asyoumeant",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Contract-governed development loops aligned to explicit user intent.",
   "author": {
     "name": "AsYouMeant contributors"
@@ -15,7 +15,7 @@
     "longDescription": "AsYouMeant compiles user intent into gated development and acceptance contracts before implementation begins.",
     "developerName": "AsYouMeant contributors",
     "category": "Productivity",
-    "capabilities": ["Contract governance", "Native guardrails"],
+    "capabilities": ["Contract governance", "Dynamic Skill pool", "Post-loop Skill evidence", "Native guardrails"],
     "defaultPrompt": ["Help me prepare an AsYouMeant pre-loop contract."]
   }
 }

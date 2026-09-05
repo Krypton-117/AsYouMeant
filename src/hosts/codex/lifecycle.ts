@@ -101,6 +101,7 @@ export function prepareCodexPluginPackage(repositoryRoot: string, packageRoot: s
   }
   const files = [
     [join(root, "dist", "src", "guard", "guard.js"), join(output, "dist", "src", "guard", "guard.js")],
+    [join(root, "dist", "src", "skills", "pool.js"), join(output, "dist", "src", "skills", "pool.js")],
     [join(root, "dist", "src", "hosts", "codex", "adapter.js"), join(output, "dist", "src", "hosts", "codex", "adapter.js")]
   ] as const;
   for (const [source, target] of files) {
