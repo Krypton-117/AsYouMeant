@@ -9,12 +9,18 @@ import { auditReadmes } from "../scripts/release-check.mjs";
 
 const fixture = resolve(".work", "qa", "bootstrap-2026-09-05.2", "c15");
 const required = [
+  "0.3.0",
   "0.2.0",
+  "0.2.0 → 0.3.0",
   "Component",
   "Module",
   "Product",
   "pre-loop",
   "major-loop",
+  "post-loop",
+  "Skill pool",
+  "task-local",
+  "skill-experience.md",
   "pnpm demo:m2",
   "MPL-2.0",
   "THIRD_PARTY_NOTICES.md",

@@ -148,7 +148,7 @@ export function apply(ctx) {
   const permits = new WeakMap();
   let invalidateSkillPool = () => undefined;
   const disposeSkillProvider = ctx.skills.registerProvider((control) => {
-    invalidateSkillPool = control.invalidate;
+    invalidateSkillPool = control?.invalidate ?? (() => undefined);
     return provider;
   });
 

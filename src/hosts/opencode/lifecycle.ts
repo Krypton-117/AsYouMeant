@@ -142,27 +142,30 @@ async function hostRegistersCommand(options: OpenCodeLifecycleOptions): Promise<
     env: isolatedEnvironment(options),
     stdio: ["ignore", "pipe", "pipe"]
   });
+  let stdout = "";
+  let stderr = "";
+  child.stdout?.setEncoding("utf8");
+  child.stderr?.setEncoding("utf8");
+  child.stdout?.on("data", (chunk: string) => { stdout += chunk; });
+  child.stderr?.on("data", (chunk: string) => { stderr += chunk; });
   const location = `directory=${encodeURIComponent(options.workspaceRoot)}`;
-  const providerUrl = `http://127.0.0.1:${port}/provider?${location}`;
   const commandUrl = `http://127.0.0.1:${port}/command?${location}`;
   try {
     const deadline = Date.now() + 30_000;
     while (Date.now() < deadline) {
       if (child.exitCode !== null) throw new Error(`OpenCode server exited early (${child.exitCode}).`);
       try {
-        const provider = await fetch(providerUrl);
-        if (provider.ok) {
-          const response = await fetch(commandUrl);
-          if (!response.ok) continue;
-          const commands = commandArray(await response.json());
-          if (commands.some((command) => command.name === OPENCODE_COMMAND_NAME)) return true;
-        }
+        const response = await fetch(commandUrl);
+        if (!response.ok) continue;
+        const commands = commandArray(await response.json());
+        if (commands.some((command) => command.name === OPENCODE_COMMAND_NAME)) return true;
       } catch {
         // Startup is observable through the bounded endpoint poll.
       }
       await new Promise((resolveWait) => setTimeout(resolveWait, 100));
     }
-    throw new Error("OpenCode command registration timed out.");
+    const details = [stdout.trim(), stderr.trim()].filter(Boolean).join("\n").slice(-4000);
+    throw new Error(`OpenCode command registration timed out.${details ? ` Host output: ${details}` : ""}`);
   } finally {
     child.kill();
     child.stdout?.destroy();

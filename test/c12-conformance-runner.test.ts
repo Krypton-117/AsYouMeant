@@ -9,8 +9,8 @@ import {
   type HostConformanceEvidence
 } from "../src/index.js";
 
-const productVersion = "0.2.0";
-const coreIdentity = "asyoumeant-core-0.2.0";
+const productVersion = "0.3.0";
+const coreIdentity = "asyoumeant-core-0.3.0";
 const packageVersion = (path: string): string =>
   (JSON.parse(readFileSync(path, "utf8")) as { version: string }).version;
 
