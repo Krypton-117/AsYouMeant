@@ -2,42 +2,48 @@
 
 # AsYouMeant 0.3.0
 
-AsYouMeant is a contract-governed plugin for coding agents. It turns a conversation about what you want into a reviewed development contract, keeps implementation locked until you explicitly start it, selects only the Skills needed by the current work, and verifies each deliverable at the level you chose.
+**Make the coding agent build what you meant—not merely what it guessed.**
 
-<!-- BEGINNER_GUIDE -->
-## Beginner guide
+AsYouMeant is a contract-governed development plugin for Codex, Claude Code, and OpenCode, with experimental DSH support. Before implementation, it turns your conversation into one reviewed living specification. During implementation, it admits only the work, Skills, checks, and delivery actions that specification authorized.
 
-### What problem does it solve?
+## 1. Use AsYouMeant
 
-Coding agents can misunderstand a request, start too early, add work you did not ask for, or run many tests without proving the result you care about. AsYouMeant puts a visible pre-loop before implementation:
+### What it does
 
-1. You describe the product and the result you want to see.
-2. The agent asks plain-language questions and records one living specification.
-3. The agent checks the technical details and reports only conflicts that require your decision.
-4. Implementation remains locked until the specification passes review and you send the exact major-loop start command.
-5. The work is built and accepted as Components, optional nested Modules, and one final Product.
-6. After the Product closes, an independent post-loop may retain evidence about the Skills that were actually useful.
+Coding agents can start too early, misunderstand an ordinary phrase, add reasonable-looking work you never requested, or run many checks without proving the result you care about. AsYouMeant separates four jobs:
 
-You do not need to read source code, understand test frameworks, or remember exact technical names. You review intent, features, visible behavior, acceptance choices, and external effects.
+1. **pre-loop** — discuss what should be built and record it in plain language;
+2. **independent gate** — check intent, permissions, technical feasibility, and internal logic;
+3. **major-loop** — build only the approved Components and assemble them into the Product;
+4. **post-loop** — optionally retain useful Skill experience without changing the delivered Product.
 
-### Who is it for?
+You decide the intended users, features, visible behavior, acceptance mode, and external effects. The agent is responsible for technical consistency, commands, dependencies, and precise conflict reports. You do not need to know programming vocabulary before starting.
 
-- Beginners who want an agent to explain decisions and provide short, visible acceptance steps.
-- Professional developers who want traceable intent, bounded execution, dynamic Skill selection, reusable evidence, and deterministic Guard decisions.
-- Teams using Codex, Claude Code, or OpenCode. DSH support is experimental and pinned to one exact version.
+### Is it for you?
 
-### Support status
+Use AsYouMeant when you want:
 
-| Host | Status | Evidence boundary |
-| --- | --- | --- |
-| Codex Windows App `26.825.6671.0` / CLI `0.144.3` | Official | 0.2 real isolated lifecycle evidence is retained; 0.3 Skill pool behavior is statically traced to current Codex Skill metadata and the contract Guard |
-| Claude Code `2.1.260` | Official | 0.2 official-contract checks are retained; no real Claude Code host test is claimed; 0.3 uses documented Skill settings plus the contract Guard |
-| OpenCode `1.18.18` | Official | 0.2 real isolated lifecycle evidence is retained; 0.3 adds current V2 Skill transforms, reload, and permission hooks without replacing the prior entrypoint |
-| DSH `0.1.1-rc.2` | Experimental | The exact-version 0.2 result is `VERIFIED_COMPATIBLE`; 0.3 is statically traced only and is not a compatibility guarantee for DSH or any other version |
+- a long requirements discussion before any implementation;
+- one readable source of truth instead of scattered plans and ledgers;
+- an explicit Component–Module–Product development tree;
+- different acceptance modes for different parts of one Product;
+- hard stops for unapproved files, tests, dependencies, retries, delegation, or publishing;
+- Skills selected for the current intent instead of a universal workflow.
 
-### Before you install
+It is intentionally heavier than a normal chat for tiny, disposable changes. It also cannot guarantee that an agent, host, test, or specification is bug-free. Its job is to make authority, intent, evidence, and failure visible and bounded.
 
-Install [Git](https://git-scm.com/), Node.js `24.11.1`, pnpm `11.19.0`, and at least one supported coding-agent host. Then open a terminal and run:
+### Install
+
+#### Requirements
+
+Install:
+
+- [Git](https://git-scm.com/);
+- Node.js `24.11.1`;
+- pnpm `11.19.0`;
+- at least one supported coding-agent host.
+
+Build AsYouMeant once:
 
 ```text
 git clone https://github.com/Krypton-117/AsYouMeant.git
@@ -46,7 +52,7 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-Choose only the host you use.
+Then install only the host package you use.
 
 #### Codex
 
@@ -57,6 +63,8 @@ codex plugin marketplace add .
 codex plugin add asyoumeant@asyoumeant
 ```
 
+After installing or updating the plugin, restart Codex and open a new task so its prompt and tool Hooks are loaded.
+
 #### Claude Code
 
 From the AsYouMeant repository root:
@@ -66,207 +74,349 @@ claude plugin marketplace add .
 claude plugin install asyoumeant@asyoumeant --scope user
 ```
 
-This package is officially supported through contract verification, but this release does not claim a real-host Claude Code test.
-
 #### OpenCode
 
-Open your own project and create these paths if they do not exist:
+Run the following from the AsYouMeant repository root. Replace the example path with the project in which you want to use OpenCode.
 
-```text
-.opencode/plugins/
-.opencode/asyoumeant-runtime/
-.opencode/skills/
+PowerShell:
+
+```powershell
+$TargetProject = "C:\path\to\your-project"
+New-Item -ItemType Directory -Force "$TargetProject\.opencode\plugins", "$TargetProject\.opencode\asyoumeant-runtime", "$TargetProject\.opencode\skills"
+Copy-Item native/opencode/asyoumeant.js "$TargetProject\.opencode\plugins\asyoumeant.js" -Force
+Copy-Item native/opencode/dist "$TargetProject\.opencode\asyoumeant-runtime\dist" -Recurse -Force
+Copy-Item native/opencode/skills/* "$TargetProject\.opencode\skills\" -Recurse -Force
 ```
 
-Copy the following built AsYouMeant files into that project:
+Bash:
 
-```text
-native/opencode/asyoumeant.js        -> .opencode/plugins/asyoumeant.js
-native/opencode/dist/                -> .opencode/asyoumeant-runtime/dist/
-native/opencode/skills/*             -> .opencode/skills/
+```bash
+TARGET_PROJECT="/path/to/your-project"
+mkdir -p "$TARGET_PROJECT/.opencode/plugins" "$TARGET_PROJECT/.opencode/asyoumeant-runtime" "$TARGET_PROJECT/.opencode/skills"
+cp native/opencode/asyoumeant.js "$TARGET_PROJECT/.opencode/plugins/asyoumeant.js"
+cp -R native/opencode/dist "$TARGET_PROJECT/.opencode/asyoumeant-runtime/"
+cp -R native/opencode/skills/* "$TARGET_PROJECT/.opencode/skills/"
 ```
 
-Start OpenCode from your project directory. Its command list should include `asyoumeant-start`.
+Start OpenCode from the target project. Its command list should include `asyoumeant-start`.
 
-#### DSH (experimental)
+#### DSH — experimental
 
-Use only DSH `0.1.1-rc.2`. Replace `<profile>` with the profile you want to modify:
+Only the exact `0.1.1-rc.2` host version is in scope. Replace `<profile>` with the profile you use:
 
 ```text
 dsh plugin --profile <profile> add ./native/dsh
 ```
 
-The verified result is `VERIFIED_COMPATIBLE` for that exact version only.
+DSH is a best-effort experimental adapter, not a general compatibility guarantee.
 
-### Use the pre-loop
+### Start your first pre-loop
 
-Tell the agent what you want to build and ask it to use AsYouMeant's pre-loop. The agent should help you confirm, in plain language:
+Send this in your coding agent and replace the bracketed text:
 
-- the intended users and visible product behavior;
-- what is inside and outside the task;
-- the Component–Module–Product development tree;
-- who runs and who accepts each node;
-- tests, failure handling, dependencies, external actions, and unattended work;
-- the exact evidence that means the product is complete.
+```text
+Use AsYouMeant to prepare a pre-loop for: [describe what you want].
+Do not implement yet. Explain each decision for a complete beginner and keep one living specification as the only authority.
+```
 
-The living specification is the only authority. Generated contracts, ledgers, acceptance packs, and task-local Skills are projections of it and cannot add permission. Before implementation, an independent read-only gate checks intent, permissions, technical feasibility, and internal logic. A failed gate returns a concise conflict report; it never starts work.
+The agent should help you confirm:
 
-### How the Skill pool works
+- who the Product is for and what problem it solves;
+- what the finished result should visibly do;
+- what is included and excluded;
+- the Component–Module–Product tree;
+- the execution and acceptance mode of every node;
+- unattended work, tests, permissions, failure handling, and delivery;
+- what evidence is sufficient to call each node complete.
 
-AsYouMeant first looks for an existing Skill that fits the current intent, capabilities, allowed actions, resources, and named consumer. A matching Skill enters the current logical Skill pool. A Skill that no longer has a consumer leaves the pool but is not deleted, so it can be checked again and reused later.
-
-If no existing Skill fits, the agent may create a task-local Skill only for a named context-overflow recovery, technology failure, or foreseeable reusable development loop. That Skill is tightly bound to the current contract, consumers, inputs, outputs, completion rules, actions, and resources. Host-native hiding is used when the host supports it; the contract Guard provides logical isolation in every host.
+You can use approximate names. The agent should infer the most likely intent and explain it in ordinary language. It should ask only when two interpretations would materially change the result or authority.
 
 ### Start the major-loop
 
-After the gate passes, the agent gives you the exact candidate version. Replace `<contract-version>` below with that value and enter the command yourself:
+Implementation stays locked until the living specification passes its independent gate. The agent then gives you an exact candidate version. Enter the native command yourself:
 
-| Host | Exact user command |
+| Host | Exact command |
 | --- | --- |
 | Codex | `$major-loop-runner start candidate=<contract-version>` |
 | Claude Code | `/asyoumeant:major-loop-runner start candidate=<contract-version>` |
 | OpenCode | `/asyoumeant-start candidate=<contract-version>` |
 | DSH `0.1.1-rc.2` | `/asyoumeant-major-loop-runner start candidate=<contract-version>` |
 
-An ordinary “continue,” an old candidate, or a command sent before the gate passes must not start implementation.
+Replace `<contract-version>` with the value in the reviewed living specification. “Continue,” a stale version, a command sent before the gate, or an agent-generated command does not authorize implementation.
 
-### What happens after the Product closes
+### What you will see
 
-If the task produced useful evidence about Skills it actually used, `post-loop-curator` runs once after Product acceptance. It updates the shared user-level Markdown file `~/.asyoumeant/skill-experience.md` only when the evidence changes a conclusion. The file helps later pre-loops and major-loops choose Skills, but it cannot authorize, restrict, execute, admit, or accept work. The curator never changes the delivered Product or blocks delivery. With no evaluable evidence, it does nothing.
-
-### What success looks like
-
-You should see these effects:
-
-- Before the exact start, implementation actions are denied.
-- After the exact start, only the approved current node may run.
-- Each Component is accepted before assembly; each Module level and the final Product has its own acceptance mode.
-- Program behavior and critical paths are shown to you unless the pre-loop explicitly approved automatic acceptance for that node.
-- A failed action produces a specific reason and next step instead of an open-ended retry loop.
-
-For the retained 0.2 baseline demonstration, run:
+Work is delivered from the bottom up:
 
 ```text
-pnpm demo:m2
+Component → optional nested Module(s) → Product
 ```
 
-The output should show a pre-start action denied and the same necessary action allowed through a valid permit.
+A Component is the smallest indivisible feature. Modules assemble Components or lower Modules. The Product is the one final deliverable. Every Component, every Module level, and the Product has its own acceptance choice, so one task may combine:
 
-### Stop or pause
+- attended work and user acceptance;
+- unattended work followed by user acceptance;
+- unattended work with automatic checking and acceptance.
 
-Tell the agent directly to stop or pause. Direct user control has priority over an active loop; the current node must checkpoint or cancel and no new work may start. You can also use the host's normal stop control. Restarting implementation requires a still-valid reviewed contract and its exact start command.
+When a result needs human judgment, the agent gives you a short, concrete way to see it. When automatic acceptance was agreed, the agent applies the named rule without asking you to inspect technical logs.
 
-### Uninstall
+### Stop, change, or remove it
 
-Codex:
+You may stop or narrow the task at any time. A change that affects intent, permission, cost, or external behavior returns to pre-loop and invalidates the old start authority.
+
+Uninstall Codex:
 
 ```text
 codex plugin remove asyoumeant@asyoumeant
 codex plugin marketplace remove asyoumeant
 ```
 
-Claude Code:
+Uninstall Claude Code:
 
 ```text
 claude plugin uninstall asyoumeant@asyoumeant --scope user
 ```
 
-OpenCode: remove `.opencode/plugins/asyoumeant.js`, `.opencode/asyoumeant-runtime/`, and the five AsYouMeant directories under `.opencode/skills/`: `pre-loop-governor`, `major-loop-runner`, `diagnostic-kernel`, `evidence-research`, and `post-loop-curator`.
+For OpenCode, remove `.opencode/plugins/asyoumeant.js`, `.opencode/asyoumeant-runtime/`, and the five AsYouMeant Skill directories under `.opencode/skills/`.
 
-DSH:
+Uninstall DSH:
 
 ```text
 dsh plugin --profile <profile> remove asyoumeant-dsh
 ```
 
-<!-- PROFESSIONAL_GUIDE -->
-## Professional guide
+## 2. Why AsYouMeant is built this way
 
-### Design
+### The three questions: object, problem, intent
 
-AsYouMeant keeps one reviewed living specification as the normative source. The contract compiler, DAG, ledger, Guard policy, acceptance package, and any task-local Skill are derived projections. A projection may make the specification executable but may not override it.
+AsYouMeant begins with three questions:
 
-The stable core deliberately contains only contract compilation, evidence resolution, replayable state, Guard and permit decisions, major-loop execution, bounded diagnostics, independent review, conformance, and thin host adapters. Upstream frameworks contribute selected capabilities, not mandatory universal workflows. General-purpose TDD, planning, review, Git, delegation, and release loops are not imposed.
+- **Object** — who or what will consume the result?
+- **Problem** — what observable difficulty must change?
+- **Intent** — what outcome and authority did the user actually mean?
 
-The five stable Skills are:
+A feature without a consumer is suspect. A procedure without a named problem is optional at best. A technically valid result that contradicts the intended outcome is still wrong.
 
-- `pre-loop-governor`: infer, confirm, and maintain the contract while implementation stays locked.
-- `major-loop-runner`: execute only the current approved projection after a native start source creates a valid permit.
-- `diagnostic-kernel`: investigate an existing failure with explicit hypotheses and a bounded distinguishing probe.
-- `evidence-research`: gather high-trust primary evidence for a named decision or approved research task.
-- `post-loop-curator`: after Product closure, retain changed conclusions about Skills actually used and remove closed consumers from the logical pool.
+This is why the living specification, not a generic workflow, is the center of the system.
 
-A task-local working Skill may be created only for a named context-overflow recovery, technology failure, or foreseeable reusable loop. It is bound to the current intent, consumers, inputs, outputs, allowed actions, resources, completion criteria, and expiry condition. When its last consumer closes, it leaves the active pool but its files remain.
+### Starting from Superpowers—and taking the framework apart
 
-The shared `~/.asyoumeant/skill-experience.md` is advisory evidence, not a policy file. It records suitable task types, observed impact, fit and misfit, improvement ideas, and meaningful differences between similar Skills. pre-loop and major-loop may consult it; only the reviewed living specification controls work.
+[Superpowers](https://github.com/obra/superpowers) demonstrated several valuable ideas: ask before coding, turn discussion into a specification, plan the work, use real feedback loops, and review the result. It also presents itself as a complete development methodology whose Skills automatically drive a broad workflow through planning, TDD, subagents, review, and completion.
 
-### Component–Module–Product model
+That completeness is useful when the workflow fits. It becomes expensive or misaligned when every task inherits procedures that its user, product, or acceptance rule does not consume.
 
-A Component is the unique smallest indivisible feature unit and always a leaf. A Module recursively assembles Components and/or lower Modules and may be omitted. The Product is the unique root and final deliverable. `ASSEMBLES` expresses containment; `REQUIRES` expresses execution prerequisites. Empty Modules, cycles, or unreachable nodes are invalid.
+The research is more nuanced than “an OpenAI paper proved Superpowers inefficient.” [SkillsBench](https://arxiv.org/abs/2602.12670) is not an OpenAI publication and did not benchmark Superpowers by name. It reported a strong average benefit from curated Skills, while also finding that focused sets with at most three modules outperformed larger or exhaustive bundles. A later [Microsoft Research study](https://www.microsoft.com/en-us/research/publication/agent-skills-can-be-harmful-an-empirical-study-of-skill-induced-failures-in-llm-agents/) attributed both functional failures and efficiency regressions to apparently relevant Skills, with excessive verification and heavy implementation pipelines among the largest procedural causes.
 
-Every Component, every assembled Module level, and the Product independently selects one of three modes:
+AsYouMeant therefore did not reject Superpowers. It decomposed it. Clarification, planning, test-first work, debugging, review, and verification remain available capabilities, but none becomes a universal obligation. The current contract decides whether each capability has a consumer.
 
-1. attended execution and user acceptance;
-2. unattended execution followed by user acceptance;
-3. unattended execution with automatic testing and acceptance.
+### Why Stop That Shit became the brake
 
-Evidence is bound to a node, criterion, implementation identity, environment, and execution identity. A relevant change invalidates only that node and its assembly ancestors, so unchanged evidence can be reused.
+A sentence such as “do not over-engineer” is advisory. An agent can still rationalize another test, checksum, compatibility layer, subagent, or “helpful” release step.
 
-### Contract, gate, and Guard
+[Stop That Shit](https://github.com/lennney/stop-that-shit) showed how to turn clear boundaries into executable Hooks and Guards. AsYouMeant absorbed that separation:
 
-The pre-loop gate is read-only and separate from implementation. It checks intent alignment, authority, technical feasibility, and internal consistency against the same candidate. Passing the gate still creates no execution authority; only the host-native exact start command creates a short-lived permit.
+- the living specification says **what is authorized**;
+- Skills provide bounded help for **how to do it**;
+- the Guard says **no** when an action exceeds the reviewed authority.
 
-The Guard evaluates file, dependency, test, retry, network, delegation, external-write, hardening, hashing, and privilege-expansion actions. It preserves necessary consequences but rejects scope creep, speculative hardening, intent violations, and task thrashing. Decisions are `allow`, `observe`, or `deny`, with a reason code and permitted next step. Host sandbox and security rules remain independently effective.
+The Guard does not decide product intent. It blocks actions such as out-of-scope writes, unapproved dependencies, consumerless tests, repeated diagnostics, excess delegation, speculative hardening, hashing, network access, and external publishing when the contract does not allow them. Host security and sandbox controls remain independently effective.
 
-### Host adapters and evidence
+### What Matt Pocock changed
 
-| Adapter | Native start seam | Skill pool seam | Evidence |
-| --- | --- | --- | --- |
-| Codex | `UserPromptSubmit` plus explicit Skill invocation | `agents/openai.yaml` metadata plus `PreToolUse` logical guard | C7 real isolated lifecycle plus [0.3 change trace](native/CHANGE-CONFORMANCE-0.3.0.json) |
-| Claude Code | namespaced `UserPromptExpansion` | `skillOverrides` where applicable plus `PreToolUse` for plugin/external Skills | [C8 contract evidence](native/claude/CONTRACT-EVIDENCE.json) plus [0.3 change trace](native/CHANGE-CONFORMANCE-0.3.0.json) |
-| OpenCode | registered command; prior hook entrypoint and V2 command transform | V2 Skill transform, prompt reload, permission hook, and tool guard | [C9 contract evidence](native/opencode/CONTRACT-EVIDENCE.json) plus [0.3 change trace](native/CHANGE-CONFORMANCE-0.3.0.json) |
-| DSH `0.1.1-rc.2` | explicit bundled Skill invocation | provider filtering/invalidation/disposal plus invocation guard | [C10 real evidence](native/dsh/CONTRACT-EVIDENCE.json) plus [0.3 change trace](native/CHANGE-CONFORMANCE-0.3.0.json) |
+[Matt Pocock’s Skills collection](https://github.com/mattpocock/skills) argues for Skills that are small, adaptable, and composable instead of a framework that owns the entire process. AsYouMeant adopted that lesson and made the consumer explicit.
 
-Codex, Claude Code, and OpenCode are the official three-host set. DSH is a separate Profile Bundle, is not a core dependency, and must remain labelled experimental even when its exact-version probe is compatible.
+A Skill is not “good” in the abstract. It is good for a particular intent, action boundary, input, output, resource set, and completion rule. The agent first looks for an existing fit. If none exists, it may create a tightly scoped task-local Skill only for a named technology failure, context-overflow recovery, or foreseeable reusable loop. When the last consumer disappears, the Skill leaves the active pool but is not deleted.
 
-### Repository map
+The result is a dynamic Skill pool, not a permanent pile of instructions.
+
+### How the project evolved
+
+- **0.1** established contract authority, replayable state, Guard decisions, bounded diagnostics, and the Component–Module–Product model.
+- **0.2** added native host packages, independent gates, explicit start permits, acceptance presentation, and delivery boundaries.
+- **0.3** added the dynamic Skill pool, intent-specific task-local Skills, two-axis review, conditional test-first evidence, and a separate advisory post-loop.
+
+The progression is deliberate: first define authority, then enforce it across hosts, then make reusable capabilities dynamic.
+
+### What is actually new
+
+AsYouMeant does not claim to have invented specifications, gates, DAGs, Hooks, acceptance trees, Skill creation, or retrospectives. Nearby work already includes:
+
+- [Spec Kit](https://github.com/github/spec-kit) for spec-driven development;
+- [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) for adaptive, phase-oriented AI development;
+- [MUSE-Autoskill](https://arxiv.org/abs/2605.27366) for creating, retrieving, evaluating, and refining Skills across tasks.
+
+Within the public material examined for this project, we did not find an exact isomorphic implementation of the complete AsYouMeant combination. The defensible innovation claim is narrower: **AsYouMeant is an original methodological synthesis and engineering practice that combines one living intent document, an independently reviewed authorization boundary, recursive per-node acceptance, and a consumer-bound dynamic Skill lifecycle.**
+
+That is a claim about the combination and its implementation—not a claim of global firstness, guaranteed correctness, or ownership of the underlying ideas.
+
+## 3. Technical design
+
+### Architecture
 
 ```text
-src/contracts/       living-spec contract compilation
-src/evidence/        decision-bound primary evidence
-src/state/           append-only ledger and replay
+conversation
+    ↓
+one living specification
+    ↓ compile projections
+contract · node graph · acceptance · Guard · Skill pool
+    ↓
+independent read-only gate
+    ↓ exact native user start
+major-loop: Component → Module(s) → Product
+    ↓
+optional advisory post-loop
+```
+
+The TypeScript core is host-neutral. Each host package translates its native prompt, command, Skill, and tool events into the same contract and Guard model. Adapters are deliberately thin so host-specific behavior does not become product logic.
+
+### One authority, many projections
+
+The reviewed living specification is normative. Runtime JSON, node cards, ledgers, acceptance packages, Guard policy, and task-local Skills are projections. A projection may make a decision executable, but it cannot add files, tests, dependencies, permissions, delegation, delivery, or completion criteria that the living document did not authorize.
+
+The agent owns technical validation of those projections. The user owns the intended behavior and external consequences.
+
+### Recursive Product graph
+
+The graph has exactly one Product root. A Component is always a leaf. A Module may assemble Components and lower Modules recursively and is optional.
+
+- `ASSEMBLES` describes composition.
+- `REQUIRES` describes execution prerequisites.
+- Cycles, empty Modules, duplicate implementations, unreachable nodes, and multiple Product roots are invalid.
+- A node can run only when its dependencies, inputs, permissions, and resources are ready.
+- A relevant change invalidates that node and its assembly ancestors, not unrelated accepted work.
+
+This gives small work a flat graph and complex work as much nesting as it actually needs.
+
+### Gate, permit, and Guard
+
+The independent gate is read-only. It checks four axes against the same frozen candidate:
+
+1. intent traceability;
+2. permission containment;
+3. technical feasibility;
+4. internal consistency.
+
+A passing review does not itself start implementation. The host-native user action must create a candidate-bound, projection-bound, time-limited permit. The Guard then evaluates sensitive actions against the active work item and contract policy.
+
+Guard outcomes are deterministic where the host exposes the necessary event:
+
+- `allow` — the action is mapped and inside authority;
+- `observe` — the boundary is uncertain or the host cannot enforce it completely;
+- `deny` — the action conflicts with a known boundary and must not run.
+
+Hooks cover only the event paths exposed by a host. AsYouMeant does not describe a missing Hook as successful enforcement.
+
+### Acceptance is part of the contract
+
+Acceptance is assigned independently to every Component, Module, and Product. Execution and acceptance may be attended or unattended, and automated checks may be selected per node.
+
+Possible reported results mean:
+
+| Result | Meaning |
+| --- | --- |
+| Automated pass | The named oracle accepted evidence bound to the current node and implementation identity. |
+| User-visible accepted | The user followed a short visible check and accepted the observed result. |
+| Approved without runtime test | Static or inherited evidence was sufficient. This must not be reported as “tests passed.” |
+| Conflict stopped | Work halted before changing intent, exceeding permission, or consuming unsupported assumptions. |
+| Aggregate closed | Every direct child is accepted, so the Module or Product closes without duplicate testing. |
+| Insufficient evidence | The node remains incomplete; uncertainty is not silently converted into success. |
+
+The repository may contain detailed evidence artifacts, but the README intentionally explains their semantics rather than presenting a release audit log.
+
+### Dynamic Skill lifecycle
+
+The stable set contains five narrow Skills:
+
+| Skill | Consumer |
+| --- | --- |
+| `pre-loop-governor` | Intent discussion and contract preparation |
+| `major-loop-runner` | Authorized execution of the current projection |
+| `diagnostic-kernel` | One evidence-bound, discriminating probe for an existing failure |
+| `evidence-research` | One named technical uncertainty for one contracted consumer |
+| `post-loop-curator` | Evidence-backed Skill evaluation after Product closure |
+
+The logical pool follows this lifecycle:
+
+```text
+discover existing Skill
+    ↓ fit?
+in-pool ── use for named consumer
+    ↓ last consumer closes
+out-of-pool, file retained
+    ↓ future consumer appears
+re-evaluate before re-entry
+```
+
+Task-local generation is a fallback, not a default. The generated Skill binds its trigger, contract pointer, consumers, allowed actions, resources, inputs, outputs, completion criteria, and expiry. The shared `~/.asyoumeant/skill-experience.md` records evidence-backed fit and improvement ideas, but it has no execution, admission, permission, or acceptance authority.
+
+### Host adapters
+
+| Host | Native integration | Boundary |
+| --- | --- | --- |
+| Codex | Plugin Skills, `UserPromptSubmit` start recognition, and `PreToolUse` Guard | Restart or open a new task after installation so Hooks load |
+| Claude Code | Namespaced Skill expansion and `PreToolUse` Hook | Uses documented plugin and Skill controls |
+| OpenCode `1.18.18` | Command transform, Skill transform/reload, permission Hook, and tool Guard | Installed into the target project |
+| DSH `0.1.1-rc.2` | Profile bundle, explicit start Skill, and provider filtering | Experimental, exact-version, best-effort support |
+
+Logical isolation is mandatory. Physical hiding of out-of-pool Skills is used only where the host supports it safely.
+
+### Repository layout
+
+```text
+src/contracts/       contract types, schema, and compilation
+src/evidence/        decision-bound evidence resolution
+src/state/           append-only state and replay
 src/guard/           deterministic policy and permit checks
-src/runner/          node execution, checkpoints, and control
+src/runner/          node execution and checkpoints
 src/diagnostics/     bounded failure diagnosis
-src/skills/          dynamic pool and task-local Skill compilation
-src/post-loop/       advisory Skill experience and post-loop curation
-src/hosts/           thin host adapters and lifecycle checks
-src/conformance/     independent review and release projections
+src/skills/          pool and task-local Skill compilation
+src/post-loop/       advisory experience curation
+src/hosts/           thin host adapters
+src/conformance/     independent review and result presentation
 native/              installable host packages
-test/                Component acceptance suites
-scripts/             verification, demo, probe, and release checks
+test/                node-focused checks
+scripts/             build, verification, probe, and release utilities
 ```
 
-### Development and validation
+The frozen development stack is Node.js `24.11.1`, TypeScript `7.0.2`, ESM, JSON Schema 2020-12, Ajv `8.20.0`, pnpm `11.19.0`, and `node:test`. Ajv is the only core runtime dependency. Host SDKs and the three upstream Skill collections are not core runtime dependencies.
 
-The frozen toolchain is Node.js `24.11.1`, TypeScript `7.0.2`, ESM, JSON Schema 2020-12, Ajv `8.20.0`, pnpm `11.19.0`, and `node:test`. Ajv is the only core runtime dependency; DSH and the three upstream skill collections are not runtime dependencies.
+### Compatibility and extension
 
-```text
-pnpm install --frozen-lockfile
-pnpm build
-pnpm verify --node C<n>
-pnpm verify:0.3
-pnpm conformance
-pnpm demo:m2
-pnpm release:check
-```
+Existing 0.2 contracts remain readable because the 0.3 `skillPool` projection is optional. A host adapter may expose stronger physical isolation, but it must preserve the same logical contract and may not weaken host security.
 
-`pnpm verify:0.3` runs only the C16/C17 Skill pool tests and the C20/C21 experience-document tests authorized for this release. The 0.2 host lifecycle evidence is reused rather than rerun. `pnpm verify --node C<n>` remains available for a named legacy or 0.3 testable Component; `pnpm conformance`, demonstrations, and full host checks are not part of the 0.3 acceptance run. `pnpm release:check` statically checks release inputs, versions, bilingual documentation, DSH evidence, secret-shaped text, and license obligations.
+An extension should be added only when it has:
 
-### Migrating from 0.2.0 → 0.3.0
+- a named consumer and problem;
+- a traceable intent source;
+- explicit actions, inputs, outputs, resources, and completion rules;
+- a defined invalidation and failure path;
+- no duplicate owner elsewhere in the system.
 
-Rebuild and reinstall the same host package. Existing contracts remain valid because `skillPool` is optional; contracts that want dynamic selection add a `skillPool.entries` projection. Existing start commands and 0.2 Guard seams are unchanged when that projection is absent. Five stable Skills are now installed instead of four, task-local Skill files are retained after leaving the pool, and completed Products may update the advisory `skill-experience.md`. No new runtime dependency was added.
+Potential improvements remain proposals until primary-source research supports them and the user directly authorizes implementation.
 
-### License and upstream attribution
+### License
 
-AsYouMeant-owned source is licensed under [MPL-2.0](LICENSE). MPL-2.0 obligations apply at the covered-file level; this project does not relabel independent upstream MIT material as MPL-2.0. Selected or adapted material from Superpowers `6.3.0`, Stop That Shit `0.2.0`, and Matt Pocock Skills manifest `1.2.3` retains its attribution and MIT terms in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+AsYouMeant-owned source is licensed under [MPL-2.0](LICENSE). Selected or adapted material from Superpowers, Stop That Shit, and Matt Pocock Skills retains its MIT attribution in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). AsYouMeant does not relabel independent upstream MIT material as MPL-2.0.
+
+## Sources and acknowledgements
+
+Project and methodology sources:
+
+- [Superpowers](https://github.com/obra/superpowers)
+- [Stop That Shit](https://github.com/lennney/stop-that-shit)
+- [Matt Pocock Skills](https://github.com/mattpocock/skills)
+- [GitHub Spec Kit](https://github.com/github/spec-kit)
+- [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD)
+
+Research:
+
+- [SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks](https://arxiv.org/abs/2602.12670)
+- [Agent Skills Can Be Harmful: An Empirical Study of Skill-Induced Failures in LLM Agents](https://www.microsoft.com/en-us/research/publication/agent-skills-can-be-harmful-an-empirical-study-of-skill-induced-failures-in-llm-agents/)
+- [MUSE-Autoskill: Self-Evolving Agents via Skill Creation, Memory, Management, and Evaluation](https://arxiv.org/abs/2605.27366)
+
+Host documentation:
+
+- [Codex Skills](https://learn.chatgpt.com/docs/build-skills)
+- [Claude Code Skills](https://code.claude.com/docs/en/skills)
+- [OpenCode Skills](https://opencode.ai/v2/docs/skills) and [plugins](https://opencode.ai/v2/docs/build/plugins/)
+- [DSH Skills subsystem](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
