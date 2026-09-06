@@ -117,7 +117,7 @@ test("C9 package records the frozen native API mapping", () => {
   const manifest = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as Record<string, unknown>;
   assert.deepEqual(manifest, {
     name: "asyoumeant-opencode",
-    version: "0.2.0",
+    version: "0.3.0",
     type: "module",
     private: true,
     license: "MPL-2.0",

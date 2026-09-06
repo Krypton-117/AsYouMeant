@@ -18,7 +18,7 @@ import {
 } from "../dist/src/index.js";
 
 const candidateVersion = "2026-09-05.2";
-const productVersion = "0.2.0";
+const productVersion = "0.3.0";
 const projectionIdentity = `bootstrap-${candidateVersion}/C10/real-1`;
 const repositoryRoot = resolve(".");
 const qaRoot = join(repositoryRoot, ".work", "qa", `bootstrap-${candidateVersion}`);

@@ -1,6 +1,6 @@
 {
   "hostPackage": "@anthropic-ai/claude-code@2.1.260",
-  "snapshot": "2026-09-04",
+  "snapshot": "2026-09-06",
   "mode": "contract-verified-not-real-host-tested",
   "sources": [
     "https://code.claude.com/docs/en/plugins-reference",

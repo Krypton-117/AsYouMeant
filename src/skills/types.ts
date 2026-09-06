@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 export type SkillOrigin = "core" | "environment" | "task-local";
 export type TaskLocalGenerationReason =
   | "context-overflow"

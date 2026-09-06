@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { skillIsInPool } from "../skills/pool.js";
 function orderedEntries(projection) {
     const ids = new Set();

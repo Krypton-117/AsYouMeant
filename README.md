@@ -6,6 +6,8 @@
 
 AsYouMeant is a contract-governed development plugin for Codex, Claude Code, and OpenCode, with experimental DSH support. Before implementation, it turns your conversation into one reviewed living specification. During implementation, it admits only the work, Skills, checks, and delivery actions that specification authorized.
 
+<!-- BEGINNER_GUIDE -->
+
 ## 1. Use AsYouMeant
 
 ### What it does
@@ -74,6 +76,8 @@ claude plugin marketplace add .
 claude plugin install asyoumeant@asyoumeant --scope user
 ```
 
+The repository verifies the Claude plugin contract and prebuilt Hook path; it does not claim a real Claude Code host run for this release.
+
 #### OpenCode
 
 Run the following from the AsYouMeant repository root. Replace the example path with the project in which you want to use OpenCode.
@@ -109,6 +113,21 @@ dsh plugin --profile <profile> add ./native/dsh
 ```
 
 DSH is a best-effort experimental adapter, not a general compatibility guarantee.
+
+The DSH evidence conclusion `VERIFIED_COMPATIBLE` applies only to the exact `0.1.1-rc.2` host version and the tested contract boundary.
+
+#### Verify the local build
+
+From the repository root:
+
+```text
+pnpm build
+pnpm demo:m2
+```
+
+The `demo:m2` command exercises the visible permit, pause, recovery, and stop path without changing a Product.
+
+The `0.2.0 → 0.3.0` migration adds the optional Skill pool projection, task-local Skill handling, conditional test-first evidence, and advisory post-loop experience storage. Existing 0.2 contracts remain readable when the new projection is absent.
 
 ### Start your first pre-loop
 
@@ -184,6 +203,8 @@ Uninstall DSH:
 ```text
 dsh plugin --profile <profile> remove asyoumeant-dsh
 ```
+
+<!-- PROFESSIONAL_GUIDE -->
 
 ## 2. Why AsYouMeant is built this way
 

@@ -27,7 +27,7 @@ const unitRoot = join(repositoryRoot, ".work", "qa", `bootstrap-${candidateVersi
 test("C10 package is an exact-version native DSH Profile Bundle", () => {
   assert.deepEqual(readDshPackageContract(packageRoot), {
     name: DSH_PACKAGE_NAME,
-    version: "0.2.0",
+    version: "0.3.0",
     license: "MPL-2.0",
     patch: "./cordis.patch.yml"
   });

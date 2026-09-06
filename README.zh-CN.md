@@ -6,6 +6,8 @@
 
 AsYouMeant 是一套以开发合同约束编程 Agent 的插件，面向 Codex、Claude Code 和 OpenCode，并提供实验性的 DSH 适配。它会在写代码前，把你们的对话整理成一份经过审查的活文档；开工后，只允许执行这份文档批准的工作、Skill、验收和交付动作。
 
+<!-- BEGINNER_GUIDE -->
+
 ## 1. 直接开始使用
 
 ### 它解决什么问题？
@@ -74,6 +76,8 @@ claude plugin marketplace add .
 claude plugin install asyoumeant@asyoumeant --scope user
 ```
 
+本仓库已验证 Claude 插件合同和预构建 Hook 路径；本版本不宣称已经在真实 Claude Code 宿主中运行过。
+
 #### OpenCode
 
 请在 AsYouMeant 仓库根目录运行以下命令，并把示例路径替换为你准备用 OpenCode 开发的项目。
@@ -109,6 +113,21 @@ dsh plugin --profile <profile> add ./native/dsh
 ```
 
 DSH 是尽力提供的实验适配，不代表一般性兼容保证。
+
+DSH 的 `VERIFIED_COMPATIBLE` 结论只适用于精确的 `0.1.1-rc.2` 宿主版本和已经测试的合同边界。
+
+#### 验证本地构建
+
+在仓库根目录运行：
+
+```text
+pnpm build
+pnpm demo:m2
+```
+
+`demo:m2` 会演示可见许可、暂停、恢复和停止路径，不会修改 Product。
+
+`0.2.0 → 0.3.0` 迁移增加了可选的 Skill pool 投影、task-local Skill 处理、条件式 test-first 证据和建议性的 post-loop 经验存储。没有新投影时，既有 0.2 合同仍可读取。
 
 ### 开始第一个 pre-loop
 
@@ -184,6 +203,8 @@ OpenCode 用户需删除 `.opencode/plugins/asyoumeant.js`、`.opencode/asyoumea
 ```text
 dsh plugin --profile <profile> remove asyoumeant-dsh
 ```
+
+<!-- PROFESSIONAL_GUIDE -->
 
 ## 2. 为什么要这样设计？
 

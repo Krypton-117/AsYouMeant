@@ -106,7 +106,7 @@ test("C8 package matches the frozen official contract and accurate evidence labe
   prepareClaudePluginPackage(repositoryRoot, packageRoot);
   const result = verifyClaudePluginContract(packageRoot);
   assert.equal(result.hostVersion, "2.1.260");
-  assert.equal(result.contractSnapshot, "2026-09-04");
+  assert.equal(result.contractSnapshot, "2026-09-06");
   assert.equal(result.label, "contract-verified-not-real-host-tested");
   assert.equal(result.realHostTested, false);
   assert.equal(result.installCommand, "claude plugin install asyoumeant@asyoumeant --scope user");
@@ -118,7 +118,7 @@ test("C8 package matches the frozen official contract and accurate evidence labe
   assert.equal(evidence.hostPackage, `@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}`);
   assert.equal(evidence.mode, "contract-verified-not-real-host-tested");
   assert.equal(evidence.sources.length, 4);
-  assert.equal(CLAUDE_CONTRACT_SNAPSHOT, "2026-09-04");
+  assert.equal(CLAUDE_CONTRACT_SNAPSHOT, "2026-09-06");
 });
 
 test("C8 prebuilt hook uses the contract adapter without starting Claude Code", () => {

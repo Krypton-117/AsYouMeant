@@ -1,5 +1,7 @@
 import type { SkillPool } from "../skills/pool.js";
 import type { SkillExperienceStore } from "./experience-store.js";
+// SPDX-License-Identifier: MPL-2.0
+
 import type {
   PostLoopInput,
   PostLoopOutcome,
