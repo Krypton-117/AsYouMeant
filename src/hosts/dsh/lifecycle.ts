@@ -19,6 +19,7 @@ export interface DshLifecycleOptions {
   allowedQaRoot: string;
   contractPath: string;
   profileName?: string;
+  commandTimeoutMs?: number;
 }
 
 export interface DshProcessResult {
@@ -65,7 +66,8 @@ function runDsh(options: DshLifecycleOptions, args: string[]): DshProcessResult 
     cwd: options.repositoryRoot,
     env: dshChildEnvironment(options),
     encoding: "utf8",
-    maxBuffer: 16 * 1024 * 1024
+    maxBuffer: 16 * 1024 * 1024,
+    timeout: options.commandTimeoutMs ?? 0
   });
   const stdout = result.stdout ?? "";
   const stderr = result.stderr ?? "";

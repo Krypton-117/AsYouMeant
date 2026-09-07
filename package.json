@@ -20,6 +20,8 @@
     "conformance": "node --test dist/test/c12-conformance-runner.test.js",
     "demo:m2": "node scripts/demo-m2.mjs",
     "probe:dsh": "node scripts/probe-dsh.mjs",
+    "pack:dsh": "node scripts/pack-dsh.mjs",
+    "probe:dsh-package": "node scripts/probe-dsh-package.mjs",
     "release:check": "node scripts/release-check.mjs",
     "verify": "node scripts/verify.mjs",
     "verify:0.3": "pnpm build && node --test dist/test/c16-skill-pool.test.js dist/test/c17-task-local-skill.test.js dist/test/c20-skill-experience-store.test.js dist/test/c21-post-loop-curator.test.js"
