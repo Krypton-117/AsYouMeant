@@ -1,4 +1,6 @@
 node_modules/
+.asyoumeant/
+.pnpm-store/
 dist/
 !native/codex/dist/
 !native/codex/dist/**

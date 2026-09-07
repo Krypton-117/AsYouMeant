@@ -1,51 +1,16 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { MemorySessionStore, FileSessionStore, requestedMode, readOnlyTool } from "../../guard/session.js";
 import { Guard } from "../../guard/guard.js";
 export const OPENCODE_VERSION = "1.18.18";
 export const OPENCODE_START_SOURCE = "opencode-command-transform";
 export const OPENCODE_COMMAND_NAME = "asyoumeant-start";
-export class MemoryOpenCodePermitStore {
-    #permits = new Map();
-    read(sessionId) {
-        return structuredClone(this.#permits.get(sessionId) ?? null);
-    }
-    write(sessionId, permit) {
-        this.#permits.set(sessionId, structuredClone(permit));
-    }
+export class MemoryOpenCodePermitStore extends MemorySessionStore {
 }
-function safeSessionName(sessionId) {
-    return sessionId.replace(/[^a-zA-Z0-9._-]/g, "_") || "unknown-session";
-}
-export class FileOpenCodePermitStore {
-    #root;
-    constructor(root) {
-        this.#root = resolve(root);
-    }
-    #path(sessionId) {
-        return join(this.#root, `${safeSessionName(sessionId)}.json`);
-    }
-    read(sessionId) {
-        try {
-            return JSON.parse(readFileSync(this.#path(sessionId), "utf8"));
-        }
-        catch (error) {
-            if (error.code === "ENOENT")
-                return null;
-            throw error;
-        }
-    }
-    write(sessionId, permit) {
-        mkdirSync(this.#root, { recursive: true });
-        const target = this.#path(sessionId);
-        const temporary = `${target}.${process.pid}.tmp`;
-        writeFileSync(temporary, `${JSON.stringify(permit, null, 2)}\n`, "utf8");
-        renameSync(temporary, target);
-    }
+export class FileOpenCodePermitStore extends FileSessionStore {
 }
 export class OpenCodeGuardDenial extends Error {
     decision;
     constructor(decision) {
-        super(`[${decision.reasonCode}] ${decision.reason}`);
+        super(`[${decision.reasonCode}] ${decision.reason} ${decision.next ?? ""}`);
         this.name = "OpenCodeGuardDenial";
         this.decision = structuredClone(decision);
     }
@@ -61,8 +26,10 @@ function observedAt(input) {
         return input.observedAt;
     return new Date().toISOString();
 }
-function classify(tool) {
+function classify(tool, args) {
     const name = tool.toLowerCase();
+    if (readOnlyTool(tool, args))
+        return { kind: "read", mutability: "read" };
     if (/^(read|grep|glob|list|ls)$/.test(name))
         return { kind: "read", mutability: "read" };
     if (/^(write|edit|patch|apply_patch)$/.test(name))
@@ -81,7 +48,7 @@ function targetPaths(args) {
         .filter((value) => typeof value === "string");
 }
 function action(input, output, contract) {
-    const kind = classify(input.tool);
+    const kind = classify(input.tool, output.args);
     return {
         id: input.callID || `${input.sessionID}:tool`,
         workItemId: contract.activeWorkItemId,
@@ -106,6 +73,7 @@ function action(input, output, contract) {
 }
 export function registerOpenCodeCommand(config) {
     config.command ??= {};
+    config.command["asyoumeant-mode"] = { description: "Set ordinary, research or aym mode for this session", template: "Set AsYouMeant session mode: $ARGUMENTS" };
     config.command[OPENCODE_COMMAND_NAME] = {
         description: "Start the reviewed AsYouMeant major-loop",
         template: [
@@ -115,10 +83,17 @@ export function registerOpenCodeCommand(config) {
     };
 }
 export function handleOpenCodeCommand(input, contract, store) {
+    if (input.command === "asyoumeant-mode") {
+        const mode = requestedMode("/asyoumeant-mode " + input.arguments);
+        if (mode && input.sessionID)
+            store.setMode(input.sessionID, mode);
+        return { permit: store.read(input.sessionID), sourceRecognized: false };
+    }
     if (input.command !== OPENCODE_COMMAND_NAME ||
         input.arguments !== expectedArguments(contract.candidateVersion)) {
         return { permit: store.read(input.sessionID), sourceRecognized: false };
     }
+    store.setMode(input.sessionID, "aym");
     const guard = new Guard(contract);
     const issuedAt = observedAt(input);
     const permit = guard.mintPermit({
@@ -143,6 +118,7 @@ export function handleOpenCodeTool(input, output, contract, store) {
     const guard = new Guard(contract);
     const permit = store.read(input.sessionID);
     const decision = guard.decide({
+        governanceMode: store.mode(input.sessionID),
         phase: permit ? "major-loop" : "pre-start",
         now: observedAt(input),
         permit,
@@ -152,6 +128,14 @@ export function handleOpenCodeTool(input, output, contract, store) {
 }
 export function createOpenCodeHooks(contract, store, onConfig) {
     return {
+        "chat.message": async (input, output) => {
+            if (output.message.role !== "user")
+                return;
+            const text = output.parts.flatMap((part) => part.type === "text" && !part.synthetic ? [part.text] : []).join("\n");
+            const mode = requestedMode(text);
+            if (mode && input.sessionID)
+                store.setMode(input.sessionID, mode);
+        },
         config: async (config) => {
             registerOpenCodeCommand(config);
             onConfig?.();

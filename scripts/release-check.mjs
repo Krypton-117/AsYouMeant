@@ -4,8 +4,8 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { extname, join, relative, resolve } from "node:path";
 
-const PRODUCT_VERSION = "0.3.0";
-const CANDIDATE = "2026-09-06.1";
+const PRODUCT_VERSION = "0.3.1";
+const CANDIDATE = "2026-09-07.1";
 const SPDX = "SPDX-License-Identifier: MPL-2.0";
 const SOURCE_EXTENSIONS = new Set([".ts", ".js", ".mjs", ".cjs", ".yml", ".yaml"]);
 const ignoredDirectory = (root, directory, name) =>
@@ -103,7 +103,7 @@ export function auditReadmes(rootInput) {
   const english = readText(root, "README.md", failures);
   const chinese = readText(root, "README.zh-CN.md", failures);
   const shared = [
-    "0.3.0",
+    PRODUCT_VERSION,
     "0.2.0 → 0.3.0",
     "Component",
     "Module",
@@ -168,13 +168,19 @@ export function auditRelease(rootInput = process.cwd()) {
     ...(Array.isArray(poolConformance?.staticComponents) ? poolConformance.staticComponents : [])
   ].map((component) => component?.id);
   if (
-    poolConformance?.candidate !== CANDIDATE ||
-    poolConformance?.productVersion !== PRODUCT_VERSION ||
+    poolConformance?.candidate !== "2026-09-06.1" ||
+    poolConformance?.productVersion !== "0.3.0" ||
     !["C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27"]
       .every((id) => poolComponents.includes(id))
   ) {
     failures.push("0.3.0 Skill pool conformance trace is incomplete");
   }
+  const patchRelease = readJson(root, "native/CHANGE-CONFORMANCE-0.3.1.json", failures);
+  if (patchRelease?.productVersion !== PRODUCT_VERSION || patchRelease?.candidate !== CANDIDATE || patchRelease?.dshAuthenticatedRun !== "authentication-required") {
+    failures.push("0.3.1 task-mode release trace is incomplete");
+  }
+  const changelog = readText(root, "CHANGELOG.md", failures);
+  if (!changelog?.includes("## 0.3.1")) failures.push("0.3.1 release notes are missing");
 
   const secretPattern = /(sk-[a-z0-9]{16,}|bearer\s+[a-z0-9._-]{16,}|(api[_-]?key|token|password)\s*[:=]\s*["']?[a-z0-9._-]{20,})/i;
   walkFiles(root, root, (path) => {

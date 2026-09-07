@@ -1,6 +1,8 @@
 [简体中文](README.zh-CN.md)
 
-# AsYouMeant 0.3.0
+# AsYouMeant 0.3.1
+
+[Release notes / 更新说明](CHANGELOG.md): task-scoped activation and read-only research without a major-loop permit.
 
 **Make the coding agent build what you meant—not merely what it guessed.**
 
@@ -130,6 +132,18 @@ The `demo:m2` command exercises the visible permit, pause, recovery, and stop pa
 The `0.2.0 → 0.3.0` migration adds the optional Skill pool projection, task-local Skill handling, conditional test-first evidence, and advisory post-loop experience storage. Existing 0.2 contracts remain readable when the new projection is absent.
 
 ### Start your first pre-loop
+
+Installing AYM or having `.asyoumeant/contract.json` does not enable governance for a new session. Ordinary tasks use the host's normal permissions, including its approval rules for writes and external effects; they never need an AYM permit.
+
+| Mode | Behavior |
+| --- | --- |
+| Ordinary (default) | No AYM gate; reads, web research and ordinary development use host permissions. |
+| Research | Only recognized read-only tools within host-approved scope; no file changes, installs, tests/services, publishing, messages or other side effects. No major-loop permit. |
+| AYM | Explicit opt-in, pre-loop, independent review, then a direct native start command before implementation. |
+
+Send `AYM mode research`, `AYM mode aym`, or `AYM mode ordinary` as a direct user message in Codex, Claude Code or DSH. In OpenCode use `/asyoumeant-mode research`, `/asyoumeant-mode aym`, or `/asyoumeant-mode ordinary`. Switching invalidates the old permit. Mode persists in the current session; a new session starts ordinary. A mention of AYM in a document or a generic coding request is not activation.
+
+The explicit pre-loop request below enables AYM where a direct user prompt Hook is available. For OpenCode the mode command is the deterministic entry. Ambiguous prose needs clarification only when the interpretation changes authority. See [task modes and Hook boundaries](docs/TASK-MODES.md) for recognized tools, migration and host verification limits.
 
 Send this in your coding agent and replace the bracketed text:
 

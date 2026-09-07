@@ -27,7 +27,7 @@ const unitRoot = join(repositoryRoot, ".work", "qa", `bootstrap-${candidateVersi
 test("C10 package is an exact-version native DSH Profile Bundle", () => {
   assert.deepEqual(readDshPackageContract(packageRoot), {
     name: DSH_PACKAGE_NAME,
-    version: "0.3.0",
+    version: "0.3.1",
     license: "MPL-2.0",
     patch: "./cordis.patch.yml"
   });
@@ -140,6 +140,11 @@ test("C10 native adapter denies pre-start and allows the exact injected Skill ch
   const preStep = events.get("agent/pre-step")?.handler;
   assert.ok(preTool);
   assert.ok(preStep);
+  assert.equal((await preTool({ name: "write", agent }, async () => ({ kind: "allow" }))).kind, "allow");
+  await preStep({ agent, messages: [{ source: { kind: "user" }, content: [{ type: "text", text: "AYM mode research" }] }] }, async () => ({ kind: "enter", messages: [] }));
+  for (const name of ["read", "web_search"]) assert.equal((await preTool({ name, agent }, async () => ({ kind: "allow" }))).kind, "allow");
+  for (const name of ["write", "bash", "publish", "skill"]) assert.equal((await preTool({ name, agent }, async () => ({ kind: "allow" }))).kind, "deny");
+  await preStep({ agent, messages: [{ source: { kind: "user" }, content: [{ type: "text", text: "AYM mode aym" }] }] }, async () => ({ kind: "enter", messages: [] }));
   const denied = await preTool({ name: DSH_SELFCHECK_TOOL, agent }, async () => ({ kind: "allow" }));
   assert.equal(denied.kind, "deny");
   assert.match(denied.reason, /PRE_START_HARD_LOCK/);

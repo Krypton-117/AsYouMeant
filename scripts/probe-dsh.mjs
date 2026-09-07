@@ -18,7 +18,7 @@ import {
 } from "../dist/src/index.js";
 
 const candidateVersion = "2026-09-05.2";
-const productVersion = "0.3.0";
+const productVersion = "0.3.1";
 const projectionIdentity = `bootstrap-${candidateVersion}/C10/real-1`;
 const repositoryRoot = resolve(".");
 const qaRoot = join(repositoryRoot, ".work", "qa", `bootstrap-${candidateVersion}`);
@@ -69,7 +69,7 @@ try {
   const composed = inspectDshPlugin(options);
   const preStart = runDshHeadlessTask(
     options,
-    `Call ${DSH_SELFCHECK_TOOL} exactly once. Return the exact denial code.`
+    `Use AYM for this task. Call ${DSH_SELFCHECK_TOOL} exactly once. Return the exact denial code.`
   );
   const startCommand = `/${DSH_SKILL_NAME} start candidate=${candidateVersion}`;
   const legal = runDshHeadlessTask(

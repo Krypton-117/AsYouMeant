@@ -1,6 +1,8 @@
 [English](README.md)
 
-# AsYouMeant 0.3.0
+# AsYouMeant 0.3.1
+
+[更新说明 / Release notes](CHANGELOG.md)：按会话显式启用治理，只读研究不再要求 major-loop permit。
 
 **让编程 Agent 实现“你真正想要的”，而不是“它猜出来的”。**
 
@@ -130,6 +132,18 @@ pnpm demo:m2
 `0.2.0 → 0.3.0` 迁移增加了可选的 Skill pool 投影、task-local Skill 处理、条件式 test-first 证据和建议性的 post-loop 经验存储。没有新投影时，既有 0.2 合同仍可读取。
 
 ### 开始第一个 pre-loop
+
+安装 AYM 或工作区存在 `.asyoumeant/contract.json`，不会让新会话自动启用治理。普通任务使用宿主原有权限，写入和外部副作用仍遵循宿主审批规则，不需要 AYM permit。
+
+| 模式 | 行为 |
+| --- | --- |
+| 普通（默认） | 不启用 AYM 门禁；读取、联网研究和普通开发由宿主权限控制。 |
+| 研究 | 只允许宿主批准范围内已识别的只读工具；禁止修改文件、安装、测试或服务、发布、发消息和其他副作用；不需要 major-loop permit。 |
+| AYM | 用户显式启用后，经过 pre-loop、独立审查和宿主原生启动命令，才允许实现。 |
+
+Codex、Claude Code、DSH 中直接发送 `AYM mode research`、`AYM mode aym` 或 `AYM mode ordinary`；OpenCode 使用 `/asyoumeant-mode research`、`/asyoumeant-mode aym` 或 `/asyoumeant-mode ordinary`。切换会使旧 permit 失效。模式在当前会话中保持，新会话默认普通模式；文档里的 AYM 字样和普通代码请求不构成启用。
+
+下面的明确 pre-loop 请求可在支持直接用户提示 Hook 的路径启用 AYM；OpenCode 的确定入口是模式命令。只有歧义会改变权限时才询问最小必要问题。工具识别、状态迁移和宿主验证边界见[任务模式与 Hook 边界](docs/TASK-MODES.md)。
 
 把下面这段话发送给编程 Agent，并替换方括号内容：
 

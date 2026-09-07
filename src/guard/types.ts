@@ -142,6 +142,7 @@ export interface GuardConfig {
 }
 
 export interface GuardDecisionContext {
+  governanceMode?: import("./session.js").GovernanceMode;
   phase: GuardPhase;
   now: string;
   permit: MajorLoopPermit | null;

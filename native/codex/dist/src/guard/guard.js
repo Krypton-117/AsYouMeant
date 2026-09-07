@@ -19,7 +19,6 @@ const sensitiveKinds = new Set([
     "dependency",
     "hash",
     "delegate",
-    "network",
     "external-write",
     "delivery"
 ]);
@@ -69,6 +68,11 @@ function outcomeFor(level, certainty) {
     return "deny";
 }
 function makeDecision(config, context, outcome, category, reasonCode, reason, next) {
+    if (outcome === "deny") {
+        const mode = context.governanceMode ?? "aym";
+        reason = `Action ${context.action.id} (${context.action.kind}); mode=${mode}. ${reason}`;
+        next = `${next ?? ""} Native start after independent review: ${config.nativeStartPaths.map((path) => path.command).join("; ")}. Read-only alternative: use an approved read/search tool. Switch with a direct user message 'AYM mode research' or 'AYM mode ordinary' (OpenCode: /asyoumeant-mode research or /asyoumeant-mode ordinary); switching invalidates the old permit.`;
+    }
     return {
         outcome,
         category,
@@ -327,6 +331,15 @@ export class Guard {
     }
     decide(context) {
         const action = context.action;
+        if (context.governanceMode === "ordinary") {
+            return makeDecision(this.#config, context, "allow", null, "AYM_NOT_ENABLED", "Ordinary task: host permissions apply; AYM governance is not enabled.", null);
+        }
+        if (context.governanceMode === "research") {
+            if (action.mutability !== "read" || (action.kind !== "read" && action.kind !== "network")) {
+                return coreDeny(this.#config, context, "intent-violation", "RESEARCH_READ_ONLY", "Research mode permits only proven read-only tools; writes, execution, installation and external effects are not authorized.", "Continue with local reads or read-only web research, or explicitly change mode.");
+            }
+            return makeDecision(this.#config, context, "allow", null, "RESEARCH_READ_ONLY", "Read-only research within the host-approved tool scope; no major-loop permit is required.", null);
+        }
         if (!isNonEmpty(action.id)) {
             return coreDeny(this.#config, context, "scope-creep", "ACTION_ID_MISSING", "The action has no identity.", "Give the mapped action a stable identity before evaluation.");
         }
@@ -343,6 +356,9 @@ export class Guard {
             if (issue) {
                 return coreDeny(this.#config, context, issue.category, issue.reasonCode, issue.reason, issue.next);
             }
+        }
+        if (context.governanceMode === "aym" && action.mutability === "unknown") {
+            return coreDeny(this.#config, context, "intent-violation", "ACTION_EFFECT_UNPROVEN", "A permit does not authorize an unknown tool or command effect.", "Use a recognized tool with visible effects and targets; arbitrary wrappers cannot establish contract permission.");
         }
         if (this.#config.policy.executionState !== "active" && sensitive) {
             const stopped = this.#config.policy.executionState === "stopped";

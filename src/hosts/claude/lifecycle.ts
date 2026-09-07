@@ -26,6 +26,7 @@ function requireChild(child: string, parent: string): void {
 export function prepareClaudePluginPackage(repositoryRoot: string, packageRoot: string): void {
   requireChild(packageRoot, repositoryRoot);
   const files = [
+    [join(repositoryRoot, "dist", "src", "guard", "session.js"), join(packageRoot, "dist", "src", "guard", "session.js")],
     [join(repositoryRoot, "dist", "src", "guard", "guard.js"), join(packageRoot, "dist", "src", "guard", "guard.js")],
     [join(repositoryRoot, "dist", "src", "skills", "pool.js"), join(packageRoot, "dist", "src", "skills", "pool.js")],
     [join(repositoryRoot, "dist", "src", "hosts", "claude", "adapter.js"), join(packageRoot, "dist", "src", "hosts", "claude", "adapter.js")]
@@ -49,7 +50,7 @@ export function verifyClaudePluginContract(packageRoot: string): ClaudeContractV
   const result: ClaudeContractVerification = {
     hostVersion: CLAUDE_CODE_VERSION,
     contractSnapshot: CLAUDE_CONTRACT_SNAPSHOT,
-    manifest: manifest.name === "asyoumeant" && manifest.version === "0.3.0" && manifest.hooks === "./hooks/hooks.json",
+    manifest: manifest.name === "asyoumeant" && manifest.version === "0.3.1" && manifest.hooks === "./hooks/hooks.json",
     namespacedSkill: expansion?.matcher === "asyoumeant:major-loop-runner",
     userOnlyStart: /disable-model-invocation:\s*true/.test(skill),
     sourceHook: Boolean(expansion),

@@ -1,49 +1,13 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { MemorySessionStore, FileSessionStore, requestedMode, readOnlyTool } from "../../guard/session.js";
+import { basename, relative, resolve } from "node:path";
 import { Guard } from "../../guard/guard.js";
 import { skillIsInPool } from "../../skills/pool.js";
 export const CODEX_CLI_VERSION = "0.144.3";
 export const CODEX_APP_VERSION = "26.825.6671.0";
 export const CODEX_START_SOURCE = "codex-user-prompt-submit";
-export class MemoryCodexPermitStore {
-    #permits = new Map();
-    read(sessionId) {
-        return structuredClone(this.#permits.get(sessionId) ?? null);
-    }
-    write(sessionId, permit) {
-        this.#permits.set(sessionId, structuredClone(permit));
-    }
+export class MemoryCodexPermitStore extends MemorySessionStore {
 }
-function safeSessionName(sessionId) {
-    const normalized = sessionId.replace(/[^a-zA-Z0-9._-]/g, "_");
-    return normalized || "unknown-session";
-}
-export class FileCodexPermitStore {
-    #root;
-    constructor(root) {
-        this.#root = resolve(root);
-    }
-    #path(sessionId) {
-        return join(this.#root, `${safeSessionName(sessionId)}.json`);
-    }
-    read(sessionId) {
-        try {
-            return JSON.parse(readFileSync(this.#path(sessionId), "utf8"));
-        }
-        catch (error) {
-            const code = error.code;
-            if (code === "ENOENT")
-                return null;
-            throw error;
-        }
-    }
-    write(sessionId, permit) {
-        mkdirSync(this.#root, { recursive: true });
-        const target = this.#path(sessionId);
-        const temporary = `${target}.${process.pid}.tmp`;
-        writeFileSync(temporary, `${JSON.stringify(permit, null, 2)}\n`, "utf8");
-        renameSync(temporary, target);
-    }
+export class FileCodexPermitStore extends FileSessionStore {
 }
 function exactStartCommand(candidateVersion) {
     return `$major-loop-runner start candidate=${candidateVersion}`;
@@ -82,14 +46,16 @@ function extractPaths(input, cwd) {
     });
 }
 function classify(input) {
+    if (readOnlyTool(String(input.tool_name ?? ""), input.tool_input))
+        return { kind: "read", mutability: "read" };
     const name = String(input.tool_name || "unknown").toLowerCase();
     const command = extractCommand(input.tool_input).toLowerCase();
-    if (/delegate|subagent|task/.test(name))
+    if (/^(delegate|subagent|task|spawn_agent)$/.test(name))
         return { kind: "delegate", mutability: "write" };
-    if (/apply_patch|write|edit|delete|move/.test(name))
+    if (/^(apply_patch|write|edit|delete|move)$/.test(name))
         return { kind: "write", mutability: "write" };
-    if (/read|view|search|find|list|get_|status/.test(name))
-        return { kind: "read", mutability: "read" };
+    if (!/^(exec_command|bash|shell|shell_command)$/.test(name) || /[\r\n;&|<>$`]/.test(command))
+        return { kind: "control", mutability: "unknown" };
     if (/\b(?:pnpm|npm|yarn)\s+(?:add|install|remove|uninstall|update)\b/.test(command)) {
         return { kind: "dependency", mutability: "write" };
     }
@@ -165,11 +131,17 @@ function requestedSkill(input) {
 export function handleCodexHook(input, contract, store) {
     const sessionId = String(input.session_id || "");
     const guard = new Guard(contract);
+    if (input.hook_event_name === "UserPromptSubmit") {
+        const mode = requestedMode(input.prompt ?? "");
+        if (mode && sessionId)
+            store.setMode(sessionId, mode);
+    }
     const expectedCommand = exactStartCommand(contract.candidateVersion);
     if (input.hook_event_name === "UserPromptSubmit") {
         if (input.prompt !== expectedCommand) {
             return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
         }
+        store.setMode(sessionId, "aym");
         const issuedAt = isoNow(input);
         const permit = guard.mintPermit({
             permitId: `codex:${sessionId}:${input.turn_id || "turn"}`,
@@ -198,13 +170,13 @@ export function handleCodexHook(input, contract, store) {
         return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
     }
     const skillId = requestedSkill(input);
-    if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+    if (store.mode(sessionId) === "aym" && skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
         return {
             output: {
                 hookSpecificOutput: {
                     hookEventName: "PreToolUse",
                     permissionDecision: "deny",
-                    permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+                    permissionDecisionReason: `[SKILL_OUT_OF_POOL] Action skill ${skillId}; mode=aym. Skill permission is absent. Revise pre-loop and independent review, then use ${exactStartCommand(contract.candidateVersion)}. Read-only tools remain available; send AYM mode research or AYM mode ordinary to switch.`
                 }
             },
             permit: store.read(sessionId),
@@ -214,6 +186,7 @@ export function handleCodexHook(input, contract, store) {
     }
     const permit = store.read(sessionId);
     const decision = guard.decide({
+        governanceMode: store.mode(sessionId),
         phase: permit ? "major-loop" : "pre-start",
         now: isoNow(input),
         permit,
@@ -225,7 +198,7 @@ export function handleCodexHook(input, contract, store) {
                 hookSpecificOutput: {
                     hookEventName: "PreToolUse",
                     permissionDecision: "deny",
-                    permissionDecisionReason: `[${decision.reasonCode}] ${decision.reason}`
+                    permissionDecisionReason: `[${decision.reasonCode}] ${input.tool_name}: ${decision.reason} ${decision.next ?? ""}`
                 }
             },
             permit,

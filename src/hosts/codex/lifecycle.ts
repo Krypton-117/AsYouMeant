@@ -100,6 +100,7 @@ export function prepareCodexPluginPackage(repositoryRoot: string, packageRoot: s
     throw new Error("Codex package root must be a child of the repository root.");
   }
   const files = [
+    [join(root, "dist", "src", "guard", "session.js"), join(output, "dist", "src", "guard", "session.js")],
     [join(root, "dist", "src", "guard", "guard.js"), join(output, "dist", "src", "guard", "guard.js")],
     [join(root, "dist", "src", "skills", "pool.js"), join(output, "dist", "src", "skills", "pool.js")],
     [join(root, "dist", "src", "hosts", "codex", "adapter.js"), join(output, "dist", "src", "hosts", "codex", "adapter.js")]

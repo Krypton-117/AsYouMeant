@@ -73,6 +73,7 @@ function isolatedEnvironment(options: OpenCodeLifecycleOptions): NodeJS.ProcessE
 export function prepareOpenCodePluginPackage(repositoryRoot: string, packageRoot: string): void {
   requireChild(packageRoot, repositoryRoot, "OpenCode package root");
   const files = [
+    [join(repositoryRoot, "dist", "src", "guard", "session.js"), join(packageRoot, "dist", "src", "guard", "session.js")],
     [join(repositoryRoot, "dist", "src", "guard", "guard.js"), join(packageRoot, "dist", "src", "guard", "guard.js")],
     [join(repositoryRoot, "dist", "src", "skills", "pool.js"), join(packageRoot, "dist", "src", "skills", "pool.js")],
     [join(repositoryRoot, "dist", "src", "hosts", "skill-pool.js"), join(packageRoot, "dist", "src", "hosts", "skill-pool.js")],
@@ -155,7 +156,7 @@ async function hostRegistersCommand(options: OpenCodeLifecycleOptions): Promise<
     while (Date.now() < deadline) {
       if (child.exitCode !== null) throw new Error(`OpenCode server exited early (${child.exitCode}).`);
       try {
-        const response = await fetch(commandUrl);
+        const response = await fetch(commandUrl, { signal: AbortSignal.timeout(2000) });
         if (!response.ok) continue;
         const commands = commandArray(await response.json());
         if (commands.some((command) => command.name === OPENCODE_COMMAND_NAME)) return true;

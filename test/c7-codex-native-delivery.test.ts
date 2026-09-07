@@ -91,7 +91,7 @@ test("C7 recognizes only the exact Codex UserPromptSubmit source", () => {
   const wrong = handleCodexHook(prompt("wrong", startCommand, "SessionStart"), runtimeContract, store);
   assert.equal(wrong.sourceRecognized, false);
   assert.equal(store.read("wrong"), null);
-  assert.equal(handleCodexHook(preTool("wrong"), runtimeContract, store).decision?.reasonCode, "PRE_START_HARD_LOCK");
+  assert.equal(handleCodexHook(preTool("wrong"), runtimeContract, store).decision?.reasonCode, "AYM_NOT_ENABLED");
 
   const started = handleCodexHook(prompt("legal", startCommand), runtimeContract, store);
   assert.equal(started.sourceRecognized, true);
@@ -100,7 +100,9 @@ test("C7 recognizes only the exact Codex UserPromptSubmit source", () => {
 });
 
 test("C7 reports pre-start denial without claiming a host effect", () => {
-  const result = handleCodexHook(preTool("locked"), contract(), new MemoryCodexPermitStore());
+  const store = new MemoryCodexPermitStore();
+  handleCodexHook(prompt("locked", "Use AYM for this task"), contract(), store);
+  const result = handleCodexHook(preTool("locked"), contract(), store);
   assert.equal(result.output?.hookSpecificOutput.permissionDecision, "deny");
   assert.match(result.output?.hookSpecificOutput.permissionDecisionReason ?? "", /PRE_START_HARD_LOCK/);
   assert.deepEqual(result.decision?.hostEffect, { outcome: "unobserved", evidenceId: null });
@@ -113,7 +115,7 @@ test("C7 package binds the native manifest and explicit-only start Skill", () =>
     name: string; version: string; hooks?: string;
   };
   assert.deepEqual({ name: manifest.name, version: manifest.version, hooks: manifest.hooks }, {
-    name: "asyoumeant", version: "0.3.0", hooks: "./hooks/codex-hooks.json"
+    name: "asyoumeant", version: "0.3.1", hooks: "./hooks/codex-hooks.json"
   });
   const policy = readFileSync(join(pluginPackageRoot, "skills", "major-loop-runner", "agents", "openai.yaml"), "utf8");
   assert.match(policy, /allow_implicit_invocation:\s*false/);
@@ -158,6 +160,7 @@ test("C7 completes one isolated real Codex lifecycle and hook chain", () => {
       }
     );
 
+    invoke(prompt("real-pre-start", "AYM mode aym"));
     const denied = invoke(preTool("real-pre-start"));
     assert.equal(denied.status, 0, denied.stderr);
     assert.match(denied.stdout, /PRE_START_HARD_LOCK/);
@@ -172,7 +175,7 @@ test("C7 completes one isolated real Codex lifecycle and hook chain", () => {
     const wrongSource = invoke(prompt("real-wrong-source", startCommand, "SessionStart"));
     assert.equal(wrongSource.status, 0, wrongSource.stderr);
     assert.equal(wrongSource.stdout, "");
-    assert.match(invoke(preTool("real-wrong-source")).stdout, /PRE_START_HARD_LOCK/);
+    assert.equal(invoke(preTool("real-wrong-source")).stdout, "");
 
     writeFileSync(join(codexRoot, "visible-result.json"), `${JSON.stringify({
       host: `Codex App ${CODEX_APP_VERSION} / CLI ${CODEX_CLI_VERSION}`,

@@ -1,6 +1,6 @@
 {
   "name": "asyoumeant",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Contract-governed development loops aligned to explicit user intent.",
   "private": true,
   "type": "module",

@@ -50,26 +50,11 @@ const skillSpecs = [
   };
 });
 
-async function poolEntries(cwd) {
-  try {
-    const path = process.env.ASYOUMEANT_CONTRACT_PATH
-      ?? join(cwd ?? process.cwd(), ".asyoumeant", "contract.json");
-    const contract = JSON.parse(await readFile(path, "utf8"));
-    return Array.isArray(contract?.skillPool?.entries) ? contract.skillPool.entries : null;
-  } catch {
-    return null;
-  }
-}
-
 const provider = {
   name: providerName,
-  async list(options = {}) {
-    const entries = await poolEntries(options.cwd);
-    if (!entries) return skillSpecs;
-    const active = new Set(entries
-      .filter((entry) => entry?.status === "in-pool")
-      .map((entry) => entry.skillId));
-    return skillSpecs.filter((candidate) => active.has(candidate.name));
+  async list() {
+    // Discovery has no task identity; admission is checked in tools/pre-execute.
+    return skillSpecs;
   },
   async get(candidate) {
     const current = skillSpecs.find((entry) => entry.name === candidate.name);
@@ -146,6 +131,8 @@ function activePermit(permits, agent, contract) {
 
 export function apply(ctx) {
   const permits = new WeakMap();
+  const modes = new WeakMap();
+  const lastPrompts = new WeakMap();
   let invalidateSkillPool = () => undefined;
   const disposeSkillProvider = ctx.skills.registerProvider((control) => {
     invalidateSkillPool = control?.invalidate ?? (() => undefined);
@@ -153,13 +140,28 @@ export function apply(ctx) {
   });
 
   ctx.on("agent/pre-step", async ({ agent, messages }, next) => {
+    const latest = messages.filter((message) => message?.source?.kind === "user").at(-1);
+    const text = messageText(latest).trim();
+    const promptIdentity = latest?.id ?? text;
+    const newPrompt = latest && lastPrompts.get(agent) !== promptIdentity;
+    if (newPrompt) {
+      lastPrompts.set(agent, promptIdentity);
+      const match = /^AYM mode (ordinary|research|aym)$/i.exec(text);
+      const mode = match?.[1]?.toLowerCase()
+        ?? (/^(?:退出|关闭|停止使用)\s*AYM[。.!！]?$/i.test(text) ? "ordinary" : null)
+        ?? (/^(?:只读研究|研究模式)[。.!！]?$/.test(text) ? "research" : null)
+        ?? (/^(?:(?:请)?(?:使用\s*(?:AYM|AsYouMeant|pre-loop)|进入\s*major-loop|按\s*AYM\s*合同开发)|use\s+(?:AYM|AsYouMeant|pre-loop)\b|enter\s+major-loop\b|\/asyoumeant-major-loop-runner start )/i.test(text) ? "aym" : null);
+      if (mode) { modes.set(agent, mode); permits.delete(agent); }
+    }
     invalidateSkillPool();
     const decision = await next();
     if (decision.kind === "reject") return decision;
     const contract = await readContract(agent);
     if (!contract) return decision;
     const command = `/${DSH_SKILL_NAME} start candidate=${contract.candidateVersion}`;
-    if (!hasExactStart(messages, command) || !hasInjectedSkill(decision)) return decision;
+    if (!newPrompt || !latest || !hasExactStart([latest], command) || !hasInjectedSkill(decision)) return decision;
+    if (activePermit(permits, agent, contract)) return decision;
+    modes.set(agent, "aym");
     const issuedAt = Date.now();
     permits.set(agent, {
       candidateVersion: contract.candidateVersion,
@@ -172,6 +174,12 @@ export function apply(ctx) {
   }, { prepend: true });
 
   ctx.on("tools/pre-execute", async (exec, next) => {
+    const mode = modes.get(exec.agent) ?? "ordinary";
+    if (mode === "ordinary") return next();
+    if (mode === "research") {
+      if (readOnlyTools.has(exec.name) && exec.name !== "skill") return next();
+      return { kind: "deny", reason: `Action ${exec.name}; mode=research. Only read-only tools are authorized; execution, installation, publishing and other side effects are forbidden. Use read, grep or web_search. Send 'AYM mode ordinary' to exit, or 'AYM mode aym' to prepare pre-loop; after independent review use /${DSH_SKILL_NAME} start candidate=<reviewed-version>.` };
+    }
     if (exec.name === "skill") {
       const contract = await readContract(exec.agent);
       const requested = String(exec.args?.name ?? exec.args?.skill ?? "");
@@ -179,17 +187,17 @@ export function apply(ctx) {
         const active = contract.skillPoolEntries.some(
           (entry) => entry?.skillId === requested && entry?.status === "in-pool"
         );
-        if (!active) return { kind: "deny", reason: `SKILL_OUT_OF_POOL: ${requested}` };
+        if (!active) return { kind: "deny", reason: `SKILL_OUT_OF_POOL: Action skill ${requested}; mode=aym. Skill is outside the approved pool. Revise pre-loop and independent review, then use /${DSH_SKILL_NAME} start candidate=${contract.candidateVersion}. Read-only tools remain available; send AYM mode ordinary or AYM mode research to switch.` };
       }
       return next();
     }
     if (readOnlyTools.has(exec.name)) return next();
     const contract = await readContract(exec.agent);
     if (!activePermit(permits, exec.agent, contract)) {
-      return { kind: "deny", reason: "PRE_START_HARD_LOCK: a matching user-invoked AsYouMeant permit is required." };
+      return { kind: "deny", reason: `PRE_START_HARD_LOCK: Action ${exec.name}; mode=aym. No current reviewed permit matches this contract and time. Complete independent pre-loop review, then enter /${DSH_SKILL_NAME} start candidate=${contract?.candidateVersion ?? "<reviewed-version>"}. Read-only read/grep/web_search remains available. Send 'AYM mode research' or 'AYM mode ordinary' to switch and invalidate the old permit.` };
     }
     if (!contract.allowedTools.includes(exec.name)) {
-      return { kind: "deny", reason: `TOOL_OUTSIDE_CONTRACT: ${exec.name}` };
+      return { kind: "deny", reason: `TOOL_OUTSIDE_CONTRACT: Action ${exec.name}; mode=aym. Tool permission is absent. Revise and independently review the contract, then use /${DSH_SKILL_NAME} start candidate=${contract.candidateVersion}. Read-only reads remain available; send 'AYM mode ordinary' or 'AYM mode research' to switch.` };
     }
     return next();
   });
