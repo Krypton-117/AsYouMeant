@@ -1,5 +1,4 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { MemorySessionStore, FileSessionStore, requestedMode, readOnlyTool, type SessionStore } from "../../guard/session.js";
 
 import { Guard } from "../../guard/guard.js";
 import type {
@@ -39,7 +38,7 @@ export interface ClaudeHookInput {
 
 export interface ClaudeHookOutput {
   hookSpecificOutput: {
-    hookEventName: "UserPromptExpansion" | "PreToolUse";
+    hookEventName: "UserPromptSubmit" | "UserPromptExpansion" | "PreToolUse";
     additionalContext?: string;
     permissionDecision?: "deny";
     permissionDecisionReason?: string;
@@ -53,55 +52,13 @@ export interface ClaudeHookResult {
   sourceRecognized: boolean;
 }
 
-export interface ClaudePermitStore {
+export interface ClaudePermitStore extends SessionStore {
   read(sessionId: string): MajorLoopPermit | null;
   write(sessionId: string, permit: MajorLoopPermit): void;
 }
 
-export class MemoryClaudePermitStore implements ClaudePermitStore {
-  readonly #permits = new Map<string, MajorLoopPermit>();
-
-  read(sessionId: string): MajorLoopPermit | null {
-    return structuredClone(this.#permits.get(sessionId) ?? null);
-  }
-
-  write(sessionId: string, permit: MajorLoopPermit): void {
-    this.#permits.set(sessionId, structuredClone(permit));
-  }
-}
-
-function safeSessionName(sessionId: string): string {
-  return sessionId.replace(/[^a-zA-Z0-9._-]/g, "_") || "unknown-session";
-}
-
-export class FileClaudePermitStore implements ClaudePermitStore {
-  readonly #root: string;
-
-  constructor(root: string) {
-    this.#root = resolve(root);
-  }
-
-  #path(sessionId: string): string {
-    return join(this.#root, `${safeSessionName(sessionId)}.json`);
-  }
-
-  read(sessionId: string): MajorLoopPermit | null {
-    try {
-      return JSON.parse(readFileSync(this.#path(sessionId), "utf8")) as MajorLoopPermit;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-      throw error;
-    }
-  }
-
-  write(sessionId: string, permit: MajorLoopPermit): void {
-    mkdirSync(this.#root, { recursive: true });
-    const target = this.#path(sessionId);
-    const temporary = `${target}.${process.pid}.tmp`;
-    writeFileSync(temporary, `${JSON.stringify(permit, null, 2)}\n`, "utf8");
-    renameSync(temporary, target);
-  }
-}
+export class MemoryClaudePermitStore extends MemorySessionStore {}
+export class FileClaudePermitStore extends FileSessionStore {}
 
 function startArgs(candidateVersion: string): string {
   return `start candidate=${candidateVersion}`;
@@ -117,10 +74,8 @@ function now(input: ClaudeHookInput): string {
 }
 
 function classify(input: ClaudeHookInput): Pick<GuardAction, "kind" | "mutability"> {
-  const name = String(input.tool_name || "unknown").toLowerCase();
-  if (/^(read|grep|glob|webfetch|websearch)$/.test(name)) return { kind: "read", mutability: "read" };
-  if (/^(write|edit|notebookedit)$/.test(name)) return { kind: "write", mutability: "write" };
-  if (/^(agent|task)$/.test(name)) return { kind: "delegate", mutability: "write" };
+  if (readOnlyTool(String(input.tool_name ?? ""), input.tool_input)) return { kind: "read", mutability: "read" };
+  if (/^(apply_patch|write|edit|notebookedit)$/i.test(input.tool_name ?? "")) return { kind: "write", mutability: "write" };
   return { kind: "control", mutability: "unknown" };
 }
 
@@ -178,10 +133,15 @@ export function handleClaudeHook(
 ): ClaudeHookResult {
   const sessionId = String(input.session_id || "");
   const guard = new Guard(contract);
+  if (input.hook_event_name === "UserPromptSubmit") {
+    const mode = requestedMode(input.prompt ?? "");
+    if (mode && sessionId) store.setMode(sessionId, mode);
+  }
   if (input.hook_event_name === "UserPromptExpansion") {
     if (!exactExpansion(input, contract.candidateVersion)) {
       return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
     }
+    store.setMode(sessionId, "aym");
     const issuedAt = now(input);
     const command = startCommand(contract.candidateVersion);
     const permit = guard.mintPermit({
@@ -216,13 +176,13 @@ export function handleClaudeHook(
     return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
   }
   const skillId = requestedSkill(input);
-  if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+  if (store.mode(sessionId) === "aym" && skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
     return {
       output: {
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
-          permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+          permissionDecisionReason: `[SKILL_OUT_OF_POOL] Action skill ${skillId}; mode=aym. Skill permission is absent. Revise pre-loop and independent review, then use ${startCommand(contract.candidateVersion)}. Read-only tools remain available; send AYM mode research or AYM mode ordinary to switch.`
         }
       },
       permit: store.read(sessionId),
@@ -232,6 +192,7 @@ export function handleClaudeHook(
   }
   const permit = store.read(sessionId);
   const decision = guard.decide({
+    governanceMode: store.mode(sessionId),
     phase: permit ? "major-loop" : "pre-start",
     now: now(input),
     permit,
@@ -243,7 +204,7 @@ export function handleClaudeHook(
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
-        permissionDecisionReason: `[${decision.reasonCode}] ${decision.reason}`
+        permissionDecisionReason: `[${decision.reasonCode}] ${input.tool_name}: ${decision.reason} ${decision.next ?? ""}`
       }
     },
     permit,

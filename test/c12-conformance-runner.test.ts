@@ -9,8 +9,8 @@ import {
   type HostConformanceEvidence
 } from "../src/index.js";
 
-const productVersion = "0.3.0";
-const coreIdentity = "asyoumeant-core-0.3.0";
+const productVersion = "0.3.1";
+const coreIdentity = "asyoumeant-core-0.3.1";
 const packageVersion = (path: string): string =>
   (JSON.parse(readFileSync(path, "utf8")) as { version: string }).version;
 
@@ -52,11 +52,13 @@ const evidence = (): HostConformanceEvidence[] => [
 
 const dshEvidence = (): DshConformanceEvidence => ({
   ...(JSON.parse(readFileSync("native/dsh/CONTRACT-EVIDENCE.json", "utf8")) as DshConformanceEvidence),
+  // Synthetic validator fixture, not new authenticated DSH evidence.
+  productVersion,
   coreIdentity,
   artifactPresent: existsSync("native/dsh/package.json")
 });
 
-test("C12 reuses C7-C10 evidence and checks only changed assembly contracts", () => {
+test("C12 validates a current-version assembly fixture without claiming a new host run", () => {
   const result = runConformance(evidence(), dshEvidence(), productVersion);
   assert.equal(result.status, "PASS");
   assert.deepEqual(result.reusedComponents, ["C10", "C7", "C8", "C9"]);

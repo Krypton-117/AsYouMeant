@@ -96,7 +96,9 @@ test("C8 recognizes only the exact namespaced user expansion", () => {
 });
 
 test("C8 preserves the pre-start hard lock through Claude PreToolUse", () => {
-  const result = handleClaudeHook(preTool("locked"), contract(), new MemoryClaudePermitStore());
+  const store = new MemoryClaudePermitStore();
+  handleClaudeHook({ hook_event_name: "UserPromptSubmit", session_id: "locked", prompt: "AYM mode aym" }, contract(), store);
+  const result = handleClaudeHook(preTool("locked"), contract(), store);
   assert.equal(result.output?.hookSpecificOutput.permissionDecision, "deny");
   assert.match(result.output?.hookSpecificOutput.permissionDecisionReason ?? "", /PRE_START_HARD_LOCK/);
   assert.deepEqual(result.decision?.hostEffect, { outcome: "unobserved", evidenceId: null });
@@ -137,6 +139,7 @@ test("C8 prebuilt hook uses the contract adapter without starting Claude Code", 
     }
   });
 
+  run({ hook_event_name: "UserPromptSubmit", session_id: "wire-locked", prompt: "AYM mode aym" });
   const denied = run(preTool("wire-locked"));
   assert.equal(denied.status, 0, denied.stderr);
   assert.match(denied.stdout, /PRE_START_HARD_LOCK/);

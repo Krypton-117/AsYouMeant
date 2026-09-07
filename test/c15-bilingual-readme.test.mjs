@@ -9,7 +9,7 @@ import { auditReadmes } from "../scripts/release-check.mjs";
 
 const fixture = resolve(".work", "qa", "bootstrap-2026-09-05.2", "c15");
 const required = [
-  "0.3.0",
+  "0.3.1",
   "0.2.0",
   "0.2.0 → 0.3.0",
   "Component",

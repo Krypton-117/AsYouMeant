@@ -382,6 +382,7 @@ test("C4 allows exact good cases for bounded project capabilities", () => {
   network.mutability = "read";
   network.targetPaths = [];
   network.networkTargets = ["registry.npmjs.org"];
+  assert.equal(guard.decide({ ...context(network, null), phase: "pre-start" }).outcome, "allow");
 
   const external = action();
   external.workItemId = "W-EXTERNAL";

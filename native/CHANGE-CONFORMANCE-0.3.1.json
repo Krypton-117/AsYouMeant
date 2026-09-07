@@ -1,0 +1,14 @@
+{
+  "candidate": "2026-09-07.1",
+  "productVersion": "0.3.1",
+  "snapshot": "2026-09-07",
+  "scope": "Session task modes, read-only research, explicit AYM admission, actionable denials and host packaging",
+  "historicalSkillPoolEvidence": "native/CHANGE-CONFORMANCE-0.3.0.json",
+  "regressionSuites": ["test/task-modes.test.ts", "test/c4-guard.test.ts", "test/c7-codex-native-delivery.test.ts", "test/c8-claude-native-delivery.test.ts", "test/c9-opencode-native-delivery.test.ts", "test/c10-dsh-experimental-probe.test.ts"],
+  "codexBoundary": "Real isolated lifecycle and direct Hook invocation; not every desktop event path",
+  "claudeBoundary": "Contract and Hook-process verification; no authenticated host claim",
+  "openCodeBoundary": "Real command registration and adapter chain; intermittent host startup failures remain possible",
+  "dshAuthenticatedRun": "authentication-required",
+  "releaseNotes": "CHANGELOG.md",
+  "license": "MPL-2.0 unchanged"
+}

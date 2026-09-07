@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { MemorySessionStore, FileSessionStore, requestedMode, readOnlyTool, type SessionStore } from "../../guard/session.js";
+import { basename, relative, resolve } from "node:path";
 
 import { Guard } from "../../guard/guard.js";
 import type {
@@ -50,57 +50,13 @@ export interface CodexHookResult {
   sourceRecognized: boolean;
 }
 
-export interface CodexPermitStore {
+export interface CodexPermitStore extends SessionStore {
   read(sessionId: string): MajorLoopPermit | null;
   write(sessionId: string, permit: MajorLoopPermit): void;
 }
 
-export class MemoryCodexPermitStore implements CodexPermitStore {
-  readonly #permits = new Map<string, MajorLoopPermit>();
-
-  read(sessionId: string): MajorLoopPermit | null {
-    return structuredClone(this.#permits.get(sessionId) ?? null);
-  }
-
-  write(sessionId: string, permit: MajorLoopPermit): void {
-    this.#permits.set(sessionId, structuredClone(permit));
-  }
-}
-
-function safeSessionName(sessionId: string): string {
-  const normalized = sessionId.replace(/[^a-zA-Z0-9._-]/g, "_");
-  return normalized || "unknown-session";
-}
-
-export class FileCodexPermitStore implements CodexPermitStore {
-  readonly #root: string;
-
-  constructor(root: string) {
-    this.#root = resolve(root);
-  }
-
-  #path(sessionId: string): string {
-    return join(this.#root, `${safeSessionName(sessionId)}.json`);
-  }
-
-  read(sessionId: string): MajorLoopPermit | null {
-    try {
-      return JSON.parse(readFileSync(this.#path(sessionId), "utf8")) as MajorLoopPermit;
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code;
-      if (code === "ENOENT") return null;
-      throw error;
-    }
-  }
-
-  write(sessionId: string, permit: MajorLoopPermit): void {
-    mkdirSync(this.#root, { recursive: true });
-    const target = this.#path(sessionId);
-    const temporary = `${target}.${process.pid}.tmp`;
-    writeFileSync(temporary, `${JSON.stringify(permit, null, 2)}\n`, "utf8");
-    renameSync(temporary, target);
-  }
-}
+export class MemoryCodexPermitStore extends MemorySessionStore {}
+export class FileCodexPermitStore extends FileSessionStore {}
 
 function exactStartCommand(candidateVersion: string): string {
   return `$major-loop-runner start candidate=${candidateVersion}`;
@@ -137,11 +93,12 @@ function extractPaths(input: unknown, cwd: string | undefined): string[] {
 }
 
 function classify(input: CodexHookInput): Pick<GuardAction, "kind" | "mutability"> {
+  if (readOnlyTool(String(input.tool_name ?? ""), input.tool_input)) return { kind: "read", mutability: "read" };
   const name = String(input.tool_name || "unknown").toLowerCase();
   const command = extractCommand(input.tool_input).toLowerCase();
-  if (/delegate|subagent|task/.test(name)) return { kind: "delegate", mutability: "write" };
-  if (/apply_patch|write|edit|delete|move/.test(name)) return { kind: "write", mutability: "write" };
-  if (/read|view|search|find|list|get_|status/.test(name)) return { kind: "read", mutability: "read" };
+  if (/^(delegate|subagent|task|spawn_agent)$/.test(name)) return { kind: "delegate", mutability: "write" };
+  if (/^(apply_patch|write|edit|delete|move)$/.test(name)) return { kind: "write", mutability: "write" };
+  if (!/^(exec_command|bash|shell|shell_command)$/.test(name) || /[\r\n;&|<>$`]/.test(command)) return { kind: "control", mutability: "unknown" };
   if (/\b(?:pnpm|npm|yarn)\s+(?:add|install|remove|uninstall|update)\b/.test(command)) {
     return { kind: "dependency", mutability: "write" };
   }
@@ -221,12 +178,17 @@ export function handleCodexHook(
 ): CodexHookResult {
   const sessionId = String(input.session_id || "");
   const guard = new Guard(contract);
+  if (input.hook_event_name === "UserPromptSubmit") {
+    const mode = requestedMode(input.prompt ?? "");
+    if (mode && sessionId) store.setMode(sessionId, mode);
+  }
   const expectedCommand = exactStartCommand(contract.candidateVersion);
 
   if (input.hook_event_name === "UserPromptSubmit") {
     if (input.prompt !== expectedCommand) {
       return { output: null, permit: store.read(sessionId), decision: null, sourceRecognized: false };
     }
+    store.setMode(sessionId, "aym");
     const issuedAt = isoNow(input);
     const permit = guard.mintPermit({
       permitId: `codex:${sessionId}:${input.turn_id || "turn"}`,
@@ -257,13 +219,13 @@ export function handleCodexHook(
   }
 
   const skillId = requestedSkill(input);
-  if (skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
+  if (store.mode(sessionId) === "aym" && skillId && contract.skillPool && !skillIsInPool(contract.skillPool, skillId)) {
     return {
       output: {
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
-          permissionDecisionReason: `[SKILL_OUT_OF_POOL] ${skillId}`
+          permissionDecisionReason: `[SKILL_OUT_OF_POOL] Action skill ${skillId}; mode=aym. Skill permission is absent. Revise pre-loop and independent review, then use ${exactStartCommand(contract.candidateVersion)}. Read-only tools remain available; send AYM mode research or AYM mode ordinary to switch.`
         }
       },
       permit: store.read(sessionId),
@@ -274,6 +236,7 @@ export function handleCodexHook(
 
   const permit = store.read(sessionId);
   const decision = guard.decide({
+    governanceMode: store.mode(sessionId),
     phase: permit ? "major-loop" : "pre-start",
     now: isoNow(input),
     permit,
@@ -285,7 +248,7 @@ export function handleCodexHook(
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
-          permissionDecisionReason: `[${decision.reasonCode}] ${decision.reason}`
+          permissionDecisionReason: `[${decision.reasonCode}] ${input.tool_name}: ${decision.reason} ${decision.next ?? ""}`
         }
       },
       permit,

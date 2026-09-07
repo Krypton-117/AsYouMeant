@@ -106,6 +106,7 @@ test("C9 recognizes only the exact native OpenCode command event", () => {
 test("C9 preserves the pre-start hard lock without claiming host enforcement", () => {
   const store = new MemoryOpenCodePermitStore();
   const invocation = tool("locked", "write");
+  handleOpenCodeCommand(command("locked", { command: "asyoumeant-mode", arguments: "aym" }), contract(), store);
   const result = handleOpenCodeTool(invocation.input, invocation.output, contract(), store);
   assert.equal(result.decision.reasonCode, "PRE_START_HARD_LOCK");
   assert.equal(result.decision.outcome, "deny");
@@ -117,7 +118,7 @@ test("C9 package records the frozen native API mapping", () => {
   const manifest = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as Record<string, unknown>;
   assert.deepEqual(manifest, {
     name: "asyoumeant-opencode",
-    version: "0.3.0",
+    version: "0.3.1",
     type: "module",
     private: true,
     license: "MPL-2.0",
@@ -163,6 +164,7 @@ test("C9 completes one isolated real OpenCode lifecycle and native chain", async
     assert.equal(typeof (config.command as Record<string, unknown>)[commandName], "object");
 
     const locked = tool("native-locked", "write");
+    await commandHook(command("native-locked", { command: "asyoumeant-mode", arguments: "aym" }), { parts: [] });
     await assert.rejects(
       toolHook(locked.input, locked.output),
       (error: unknown) => {
