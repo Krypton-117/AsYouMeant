@@ -116,6 +116,15 @@ dsh plugin --profile <profile> add ./native/dsh
 
 DSH 是尽力提供的实验适配，不代表一般性兼容保证。
 
+DSH 官方推荐通过 GitHub [`dsh-plugin` 主题](https://github.com/topics/dsh-plugin) 发现社区插件。AYM 按此机制适配，并提供独立 Profile Bundle；这不代表官方认证或已经发布到 npm。详见 [DSH 分发与发现](docs/DSH-DISTRIBUTION.md)。
+
+从仓库构建可移植安装包：
+
+```text
+pnpm pack:dsh
+dsh plugin --profile <profile> add ./.work/packages/asyoumeant-dsh-0.3.1.tgz
+```
+
 DSH 的 `VERIFIED_COMPATIBLE` 结论只适用于精确的 `0.1.1-rc.2` 宿主版本和已经测试的合同边界。
 
 #### 验证本地构建

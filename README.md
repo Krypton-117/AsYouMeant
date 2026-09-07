@@ -116,6 +116,15 @@ dsh plugin --profile <profile> add ./native/dsh
 
 DSH is a best-effort experimental adapter, not a general compatibility guarantee.
 
+DSH's official community discovery mechanism is the GitHub [`dsh-plugin` topic](https://github.com/topics/dsh-plugin). AYM follows that mechanism and ships a standalone Profile Bundle; this is not an official endorsement or a claim of npm publication. See [DSH distribution and discovery](docs/DSH-DISTRIBUTION.md).
+
+To build a portable installer from this repository:
+
+```text
+pnpm pack:dsh
+dsh plugin --profile <profile> add ./.work/packages/asyoumeant-dsh-0.3.1.tgz
+```
+
 The DSH evidence conclusion `VERIFIED_COMPATIBLE` applies only to the exact `0.1.1-rc.2` host version and the tested contract boundary.
 
 #### Verify the local build

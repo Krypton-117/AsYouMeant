@@ -2,6 +2,18 @@
   "name": "asyoumeant-dsh",
   "version": "0.3.1",
   "description": "Experimental native DSH profile bundle for AsYouMeant.",
+  "author": "AsYouMeant contributors",
+  "homepage": "https://github.com/Krypton-117/AsYouMeant#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Krypton-117/AsYouMeant.git",
+    "directory": "native/dsh"
+  },
+  "bugs": {
+    "url": "https://github.com/Krypton-117/AsYouMeant/issues"
+  },
+  "keywords": ["dsh-plugin", "dsh", "deepseek-harness", "asyoumeant", "contracts", "guardrails"],
+  "publishConfig": { "access": "public" },
   "type": "module",
   "main": "./asyoumeant-dsh.js",
   "exports": "./asyoumeant-dsh.js",
@@ -9,7 +21,10 @@
     "asyoumeant-dsh.js",
     "cordis.patch.yml",
     "skills",
-    "CONTRACT-EVIDENCE.json"
+    "CONTRACT-EVIDENCE.json",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "license": "MPL-2.0",
   "engines": {
