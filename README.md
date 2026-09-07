@@ -116,7 +116,11 @@ dsh plugin --profile <profile> add ./native/dsh
 
 DSH is a best-effort experimental adapter, not a general compatibility guarantee.
 
-DSH's official community discovery mechanism is the GitHub [`dsh-plugin` topic](https://github.com/topics/dsh-plugin). AYM follows that mechanism and ships a standalone Profile Bundle; this is not an official endorsement or a claim of npm publication. See [DSH distribution and discovery](docs/DSH-DISTRIBUTION.md).
+DSH's official community discovery mechanism is the GitHub [`dsh-plugin` topic](https://github.com/topics/dsh-plugin). AYM's standalone Profile Bundle is published as [asyoumeant-dsh@0.3.1](https://www.npmjs.com/package/asyoumeant-dsh/v/0.3.1), with real registry installation verified on DSH 0.1.1-rc.2. This is not official endorsement. See [DSH distribution and discovery](docs/DSH-DISTRIBUTION.md).
+
+```text
+dsh plugin --profile web add asyoumeant-dsh@0.3.1
+```
 
 On DSH 0.1.1-rc.2, AYM has also been verified in the real Web Settings → Plugins → Plugin list as enabled and mounted. Install into the `web` profile to use that UI; a `headless` installation alone does not populate it. See [Web verification](docs/DSH-WEB-VERIFICATION.md).
 

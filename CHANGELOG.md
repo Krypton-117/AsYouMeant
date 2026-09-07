@@ -6,7 +6,7 @@
 
 - 按 DSH 官方推荐的 GitHub `dsh-plugin` 主题发现机制补齐分发适配，保留现有包名和 Profile Bundle 接口。
 - 完善独立 npm 包的仓库元数据、README、LICENSE 和上游许可声明；新增离线 `pack:dsh` 与无需模型认证的 `probe:dsh-package`。
-- 验证实际 tarball 解压、五个 Skills、隔离安装、配置组合和卸载。未宣称官方认证或 npm 已发布。
+- 验证实际 tarball 解压、五个 Skills、隔离安装、配置组合和卸载。npm 已发布 `asyoumeant-dsh@0.3.1`，公开包与 GitHub 资产哈希一致；web 和 headless 的真实 registry 安装与卸载均通过。不代表官方认证。
 - GitHub topic 搜索确认收录；可下载包作为 v0.3.1 的分发补充，发布页另记源码 commit 与 SHA-256，不移动原 tag。支持范围限于实验性 DSH 0.1.1-rc.2，无专属 Web 配置卡，认证模型执行仍有验证缺口。
 
 ## 0.3.1 - 2026-09-07

@@ -30,8 +30,8 @@ The official recursive tree API subsequently returned `truncated: false`. The in
 - [Plugin settings](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-settings-plugins/README.md) requires a served settings namespace and a browser contribution for a configuration card. AYM does not ship that optional browser surface. No claim of a visible AYM configuration card is made.
 - [Profile bundles](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/bundle/README.md) documents `dsh.bundle.patch` and `dsh plugin --profile <name> add <package>`, matching AYM's distribution format.
 - GitHub repository search for `repo:Krypton-117/AsYouMeant topic:dsh-plugin` returned the AYM repository (`total_count: 1`). This verifies GitHub indexing, not an independent store listing.
-- Local `npm whoami --registry=https://registry.npmjs.org` returned `ENEEDAUTH`. Registry publication remains blocked pending maintainer login. No credentials were requested or printed.
-- After the maintainer logged in, `npm whoami` succeeded. A first publication of the verified archive was refused by npm with E403 requiring two-factor authentication or an appropriately authorized publishing token. Publication and registry installation remain unverified until that server-side requirement is satisfied.
+- Initially, local `npm whoami --registry=https://registry.npmjs.org` returned `ENEEDAUTH`. No credentials were requested or printed.
+- After the maintainer logged in, the first publication was refused with E403 requiring two-factor authentication. The maintainer subsequently completed publication. Public registry metadata and download now verify 0.3.1, with a SHA-256 identical to the GitHub asset. Real isolated registry installation, file comparison, composition and removal passed in both web and headless on 0.1.1-rc.2. See [current distribution status](DSH-DISTRIBUTION.md).
 
 These follow-up sources were read from upstream `master`; they explain current UI semantics, not compatibility of AYM with an untested upstream version. The actual local tarball installation/composition/removal probe again passed on `0.1.1-rc.2`.
 

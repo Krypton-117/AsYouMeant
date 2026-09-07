@@ -34,4 +34,4 @@ For an isolated installation/composition/removal check, run `node scripts/probe-
 
 ## Cleanup and limitations
 
-The temporary Web server exited, the package was uninstalled, and its temporary DSH_HOME was removed. No model request was submitted. This does not verify authenticated execution, a dedicated AYM configuration card, npm publication, other host versions, or reviewed store admission. See [distribution status](DSH-DISTRIBUTION.md) for the separately blocked npm publication.
+The temporary Web server exited, the package was uninstalled, and its temporary DSH_HOME was removed. No model request was submitted. This browser run does not verify authenticated execution, a dedicated AYM configuration card, other host versions, or reviewed store admission. npm publication and registry installation in both web and headless profiles were subsequently verified separately; see [distribution status](DSH-DISTRIBUTION.md).
