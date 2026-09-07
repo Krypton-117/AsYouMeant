@@ -118,6 +118,8 @@ DSH is a best-effort experimental adapter, not a general compatibility guarantee
 
 DSH's official community discovery mechanism is the GitHub [`dsh-plugin` topic](https://github.com/topics/dsh-plugin). AYM follows that mechanism and ships a standalone Profile Bundle; this is not an official endorsement or a claim of npm publication. See [DSH distribution and discovery](docs/DSH-DISTRIBUTION.md).
 
+On DSH 0.1.1-rc.2, AYM has also been verified in the real Web Settings → Plugins → Plugin list as enabled and mounted. Install into the `web` profile to use that UI; a `headless` installation alone does not populate it. See [Web verification](docs/DSH-WEB-VERIFICATION.md).
+
 To build a portable installer from this repository:
 
 ```text
