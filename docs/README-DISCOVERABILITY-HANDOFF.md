@@ -184,4 +184,6 @@ Product：AYM GitHub AI 可检索文档体系
 
 ## 8. 交接给下一位执行者
 
+2026-09-07 DSH 分发验证补充：0.1.1-rc.2 的真实 Web“设置 → 插件 → 插件列表”已验证 `asyoumeant-dsh` 可搜索，状态为已启用、已挂载。此结果以安装到 `web` Profile 为前提，不代表 npm 发布、官方商店审核或其他版本兼容。后续 README 调整应保留 [Web 验证记录](DSH-WEB-VERIFICATION.md) 和 [分发状态](DSH-DISTRIBUTION.md) 的证据边界。
+
 下一位执行者应先阅读本文件、`README.md`、`README.zh-CN.md`、`package.json`、`scripts/release-check.mjs` 和各宿主原生目录，然后创建新的候选合同。执行范围应限定为 README 双语同步、四份 `docs/` 文档和必要的文档检查；不得把旧的运行时合同或本交接文档直接当作新任务的启动许可。

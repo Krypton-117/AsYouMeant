@@ -118,6 +118,8 @@ DSH 是尽力提供的实验适配，不代表一般性兼容保证。
 
 DSH 官方推荐通过 GitHub [`dsh-plugin` 主题](https://github.com/topics/dsh-plugin) 发现社区插件。AYM 按此机制适配，并提供独立 Profile Bundle；这不代表官方认证或已经发布到 npm。详见 [DSH 分发与发现](docs/DSH-DISTRIBUTION.md)。
 
+已在 DSH 0.1.1-rc.2 的真实 Web“设置 → 插件 → 插件列表”中验证 AYM 已启用、已挂载。使用该界面需安装到 `web` Profile；只安装到 `headless` 不会自动出现在 Web Profile 中。详见 [Web 验证记录](docs/DSH-WEB-VERIFICATION.md)。
+
 从仓库构建可移植安装包：
 
 ```text

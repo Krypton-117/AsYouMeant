@@ -2,6 +2,8 @@
 
 ## DSH distribution supplement / DSH 分发补充 - 2026-09-07
 
+- 真实 Web 插件列表验证 AYM 已启用、已挂载；分发验证脚本增加 `--profile web`，区分配置组合检查与浏览器验证，说明 Profile 之间的安装隔离。
+
 - 按 DSH 官方推荐的 GitHub `dsh-plugin` 主题发现机制补齐分发适配，保留现有包名和 Profile Bundle 接口。
 - 完善独立 npm 包的仓库元数据、README、LICENSE 和上游许可声明；新增离线 `pack:dsh` 与无需模型认证的 `probe:dsh-package`。
 - 验证实际 tarball 解压、五个 Skills、隔离安装、配置组合和卸载。未宣称官方认证或 npm 已发布。

@@ -41,7 +41,7 @@ dsh plugin --profile <profile> add ./asyoumeant-dsh-0.3.1.tgz
 | DSH 0.1.1-rc.2 安装、组合、卸载 | 真实隔离宿主通过 |
 | 模式、审查和 permit 逻辑 | 自动化测试通过；认证模型端到端仍未通过 |
 | npm registry 安装 | 尚未发布；登录已确认，发布被 npm 的 2FA 要求拒绝（E403） |
-| Web Plugin list 中显示 AYM | 官方定义为宿主插件清单；尚未实测 AYM 可见性 |
+| Web Plugin list 中显示 AYM | 0.1.1-rc.2 真实 Web 界面已验证：搜索得到一个 AYM 结果，状态为已启用、已挂载 |
 | AYM 专属 Web 配置卡 | 未提供；需要额外的浏览器插件与设置 namespace |
 | 其他 DSH 版本 | 未验证，不宣称兼容 |
 
@@ -59,9 +59,16 @@ dsh plugin --profile <profile> add ./asyoumeant-dsh-0.3.1.tgz
 pnpm build
 node --test dist/test/c10-dsh-experimental-probe.test.js test/dsh-package.test.mjs
 node scripts/probe-dsh-package.mjs --dsh-bin <absolute-path-to-DSH-lib/bin.js>
+node scripts/probe-dsh-package.mjs --dsh-bin <absolute-path-to-DSH-lib/bin.js> --profile web
 ```
 
 npm 发布成功后，增加 `--registry` 验证真实 registry 安装；探测会逐个比对安装文件与源码，然后检查组合与卸载。
+
+### Web 插件列表验证
+
+已在独立 DSH_HOME 的 `web` Profile 安装 0.3.1 tarball，并以 `dsh web --host 127.0.0.1 --port 0 --no-open` 启动真实 Web 宿主。跳过 API Key 配置后，进入“设置 → 插件 → 插件列表”，搜索 `asyoumeant`，结果数量为 1。展开 `asyoumeant-dsh` 后，条目 ID 为 `include:asyoumeant-dsh`，配置状态为“已启用”，Cordis 状态为“已挂载”。界面文字与截图均已检查；验证结束后停止服务、卸载并清理临时 Profile。
+
+这证明安装后的 AYM 可在该版本的插件列表中发现并加载，不证明公开商店审核或 npm 发布。上述 `--profile web` 脚本只重复验证安装、文件、组合和卸载，输出 `webUi: not-requested`，不冒充浏览器测试。界面证据见[Web 验证记录](DSH-WEB-VERIFICATION.md)。
 
 `dsh-package.test.mjs` 使用系统 `tar` 解压真正的 npm 包，检查内容白名单、加载模块并读取全部 Skills。`probe-dsh-package.mjs` 在 `.work/qa/` 内创建独立 DSH_HOME，验证精确宿主版本、从 tarball 安装、Bundle 自动登记、组合配置、卸载和清理；每个宿主命令最多运行 60 秒，不改变日常 Profile。
 
