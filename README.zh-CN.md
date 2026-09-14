@@ -1,6 +1,6 @@
 [English](README.md)
 
-# AsYouMeant 0.3.2
+# AsYouMeant 0.3.1
 
 [更新说明 / Release notes](CHANGELOG.md)：按会话显式启用治理，只读研究不再要求 major-loop permit。
 
@@ -479,5 +479,6 @@ AsYouMeant 自有源码采用 [MPL-2.0](LICENSE)。来自 Superpowers、Stop Tha
 - [Claude Code Skills](https://code.claude.com/docs/en/skills)
 - [OpenCode Skills](https://opencode.ai/v2/docs/skills) 与 [插件文档](https://opencode.ai/v2/docs/build/plugins/)
 - [DSH Skills 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
+
 
 

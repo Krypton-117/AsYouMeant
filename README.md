@@ -1,6 +1,6 @@
 [简体中文](README.zh-CN.md)
 
-# AsYouMeant 0.3.2
+# AsYouMeant 0.3.1
 
 [Release notes / 更新说明](CHANGELOG.md): task-scoped activation and read-only research without a major-loop permit.
 
@@ -479,5 +479,6 @@ Host documentation:
 - [Claude Code Skills](https://code.claude.com/docs/en/skills)
 - [OpenCode Skills](https://opencode.ai/v2/docs/skills) and [plugins](https://opencode.ai/v2/docs/build/plugins/)
 - [DSH Skills subsystem](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
+
 
 
