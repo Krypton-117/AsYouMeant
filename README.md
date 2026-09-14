@@ -1,12 +1,14 @@
 [简体中文](README.zh-CN.md)
 
-# AsYouMeant 0.3.1
+# AsYouMeant 0.3.2
 
 [Release notes / 更新说明](CHANGELOG.md): task-scoped activation and read-only research without a major-loop permit.
 
 **Make the coding agent build what you meant—not merely what it guessed.**
 
-AsYouMeant is a contract-governed development plugin for Codex, Claude Code, and OpenCode, with experimental DSH support. Before implementation, it turns your conversation into one reviewed living specification. During implementation, it admits only the work, Skills, checks, and delivery actions that specification authorized.
+AsYouMeant is a contract-governed development plugin for Codex, Claude Code, and OpenCode, with experimental DSH support. It combines a specification workflow with runtime permission checks. Ordinary sessions remain outside AYM governance; enforcement in AYM mode depends on the events and action metadata each host exposes.
+
+**Development checkout (unreleased):** [Codex first-task walkthrough](docs/CODEX-FIRST-TASK.md) adds native draft preparation, freezing, a separate-session review attestation, and explicit permit creation for a scoped file change. Published 0.3.1 does not include these preparation commands. Hook-process tests cover the chain; a real interactive model session has not completed it.
 
 <!-- BEGINNER_GUIDE -->
 
@@ -31,7 +33,7 @@ Use AsYouMeant when you want:
 - one readable source of truth instead of scattered plans and ledgers;
 - an explicit Component–Module–Product development tree;
 - different acceptance modes for different parts of one Product;
-- hard stops for unapproved files, tests, dependencies, retries, delegation, or publishing;
+- explicit permission boundaries, with hard stops for actions the host adapter can identify;
 - Skills selected for the current intent instead of a universal workflow.
 
 It is intentionally heavier than a normal chat for tiny, disposable changes. It also cannot guarantee that an agent, host, test, or specification is bug-free. Its job is to make authority, intent, evidence, and failure visible and bounded.
@@ -39,6 +41,8 @@ It is intentionally heavier than a normal chat for tiny, disposable changes. It 
 ### Install
 
 #### Requirements
+
+Choose your host first. The DSH npm installation below needs no repository clone or local build. The following prerequisites are for building and validating a source checkout.
 
 Install:
 
@@ -181,7 +185,7 @@ You can use approximate names. The agent should infer the most likely intent and
 
 ### Start the major-loop
 
-Implementation stays locked until the living specification passes its independent gate. The agent then gives you an exact candidate version. Enter the native command yourself:
+In AYM mode, implementation stays locked until the runtime contract passes its independent gate. Ordinary mode uses host permissions. The start commands below consume an existing reviewed runtime contract; they do not create one from a conversation. For the new, limited Codex preparation route, follow the unreleased walkthrough above. Enter the native command yourself:
 
 | Host | Exact command |
 | --- | --- |
@@ -317,7 +321,7 @@ major-loop: Component → Module(s) → Product
 optional advisory post-loop
 ```
 
-The TypeScript core is host-neutral. Each host package translates its native prompt, command, Skill, and tool events into the same contract and Guard model. Adapters are deliberately thin so host-specific behavior does not become product logic.
+The TypeScript core is host-neutral. Codex, Claude Code and OpenCode map available events to the shared Guard; DSH uses a native guard in its Profile Bundle. Their observation capabilities differ: these adapters currently supply no retry evidence, and the generic Claude Code/OpenCode action mapping supplies no structured test or dependency-name evidence. A core rule is not proof of equivalent enforcement in every host.
 
 ### One authority, many projections
 
@@ -406,7 +410,7 @@ Task-local generation is a fallback, not a default. The generated Skill binds it
 | Codex | Plugin Skills, `UserPromptSubmit` start recognition, and `PreToolUse` Guard | Restart or open a new task after installation so Hooks load |
 | Claude Code | Namespaced Skill expansion and `PreToolUse` Hook | Uses documented plugin and Skill controls |
 | OpenCode `1.18.18` | Command transform, Skill transform/reload, permission Hook, and tool Guard | Installed into the target project |
-| DSH `0.1.1-rc.2` | Profile bundle, explicit start Skill, and provider filtering | Experimental, exact-version, best-effort support |
+| DSH `0.1.1-rc.2` | Profile bundle, explicit start Skill, and tool-invocation guard; provider list is not filtered | Experimental, exact-version, best-effort support |
 
 Logical isolation is mandatory. Physical hiding of out-of-pool Skills is used only where the host supports it safely.
 
@@ -450,6 +454,11 @@ AsYouMeant-owned source is licensed under [MPL-2.0](LICENSE). Selected or adapte
 
 ## Sources and acknowledgements
 
+Contributors:
+
+- **Krypton-117** — project maintainer
+- **OpenAI Codex** — AI coding agent assisting with diagnosis, implementation, testing, and documentation under maintainer direction
+
 Project and methodology sources:
 
 - [Superpowers](https://github.com/obra/superpowers)
@@ -470,3 +479,4 @@ Host documentation:
 - [Claude Code Skills](https://code.claude.com/docs/en/skills)
 - [OpenCode Skills](https://opencode.ai/v2/docs/skills) and [plugins](https://opencode.ai/v2/docs/build/plugins/)
 - [DSH Skills subsystem](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
+

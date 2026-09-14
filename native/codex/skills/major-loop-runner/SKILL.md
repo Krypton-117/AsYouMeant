@@ -6,3 +6,5 @@ description: Start or resume implementation only from the exact user command bou
 # Major-loop runner
 
 Use the active contract as the sole authority. Start only when the Codex `UserPromptSubmit` Guard has recognized the exact command `$major-loop-runner start candidate=<contract-version>` and created a matching permit. Execute one ready Component at a time, preserve checkpoints, and stop on any Guard denial, expired evidence, user stop, or contract conflict. Do not add uncontracted work, tests, dependencies, delegation, delivery, or cleanup. After the Product closes, run `post-loop-curator` once when evaluable Skill evidence exists; otherwise finish without post-loop work.
+
+For contracts created by the native first-task preparation route, remain in the author session. Read `.asyoumeant/contract.json`, implement only the approved file scope with dedicated tools, and present the specified visible acceptance check to the user. Report user acceptance only after the user gives it. This narrow route has no automatic full-tree runner or persisted acceptance verdict. A new prepare invalidates the frozen authority; return to review rather than reuse an old permit.

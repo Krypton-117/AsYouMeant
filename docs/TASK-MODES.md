@@ -67,3 +67,7 @@ The available `pnpm build` wrapper selected its bundled Node.js 24.19.0 and auto
 Subsequent 0.3.1 release preparation increments package manifest versions; dependency versions, lockfile and LICENSE remain unchanged. The release rerun also passed all 112 tests, compilation, release check and demo.
 
 OpenCode passed real lifecycle validation on the final run, but also exhibited an intermittent command endpoint stall during verification. The lifecycle probe now bounds each HTTP request to two seconds so its overall startup deadline cannot be defeated by an indefinitely pending fetch. This change does not claim to repair the external host's intermittent startup behavior.
+
+## 未发布的 Codex 准备路径
+
+开发源码新增 [首个任务准备流程](CODEX-FIRST-TASK.md)，不适用于已发布的 0.3.1。原生 prepare 进入 AYM 模式后，仅作者会话可以编辑未冻结的 `.asyoumeant/draft.json`；这项控制面例外不授予实现许可。冻结后必须通过不同会话的四维审查确认，再由作者原生 start。每次冻结绑定新身份，旧许可不可复用。研究模式仍禁止写入，并可在冻结合同损坏时进行只读检查。

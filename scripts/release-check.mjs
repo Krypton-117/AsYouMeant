@@ -4,7 +4,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { extname, join, relative, resolve } from "node:path";
 
-const PRODUCT_VERSION = "0.3.1";
+const PRODUCT_VERSION = "0.3.2";
 const CANDIDATE = "2026-09-07.1";
 const SPDX = "SPDX-License-Identifier: MPL-2.0";
 const SOURCE_EXTENSIONS = new Set([".ts", ".js", ".mjs", ".cjs", ".yml", ".yaml"]);
@@ -175,12 +175,12 @@ export function auditRelease(rootInput = process.cwd()) {
   ) {
     failures.push("0.3.0 Skill pool conformance trace is incomplete");
   }
-  const patchRelease = readJson(root, "native/CHANGE-CONFORMANCE-0.3.1.json", failures);
+  const patchRelease = readJson(root, "native/CHANGE-CONFORMANCE-0.3.2.json", failures);
   if (patchRelease?.productVersion !== PRODUCT_VERSION || patchRelease?.candidate !== CANDIDATE || patchRelease?.dshAuthenticatedRun !== "authentication-required") {
-    failures.push("0.3.1 task-mode release trace is incomplete");
+    failures.push("0.3.2 task-mode release trace is incomplete");
   }
   const changelog = readText(root, "CHANGELOG.md", failures);
-  if (!changelog?.includes("## 0.3.1")) failures.push("0.3.1 release notes are missing");
+  if (!changelog?.includes("## 0.3.2")) failures.push("0.3.1 release notes are missing");
 
   const secretPattern = /(sk-[a-z0-9]{16,}|bearer\s+[a-z0-9._-]{16,}|(api[_-]?key|token|password)\s*[:=]\s*["']?[a-z0-9._-]{20,})/i;
   walkFiles(root, root, (path) => {
@@ -209,3 +209,4 @@ if (isMain) {
   console.log(JSON.stringify(report, null, 2));
   process.exit(report.status === "PASS" ? 0 : 1);
 }
+

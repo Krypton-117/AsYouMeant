@@ -1,5 +1,15 @@
 # Changelog / 更新日志
 
+## 0.3.2 - 2026-09-14
+
+- 发布 Codex 首次任务准备链与双语文档修正。
+
+## Unreleased / 尚未发布
+
+- Codex 增加原生 prepare → freeze → 不同会话审查确认 → start 的有限文件修改路径，复用现有运行时合同与 permit。每次冻结产生新的权限身份，旧审查与许可不能复用。
+- pre-loop 仅放行作者未冻结的草稿编辑；拒绝控制文件修改、越界移动与符号链接路径。研究模式读取不依赖损坏的冻结合同。
+- 修正双语 README 的治理范围、宿主观测能力和 DSH provider 描述；新增 [首个任务指南](docs/CODEX-FIRST-TASK.md)。此路径尚未完成真实交互式 Codex 模型验证，不是自动独立审查或完整开发树执行器。已发布 npm 0.3.1 不变。
+
 ## DSH distribution supplement / DSH 分发补充 - 2026-09-07
 
 - 真实 Web 插件列表验证 AYM 已启用、已挂载；分发验证脚本增加 `--profile web`，区分配置组合检查与浏览器验证，说明 Profile 之间的安装隔离。

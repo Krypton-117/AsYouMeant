@@ -45,8 +45,17 @@ function readStdin(maxWaitMs = 1500) {
       if (mode && input.session_id) store.setMode(input.session_id, mode);
     }
     const starting = input.hook_event_name === 'UserPromptSubmit' && String(input.prompt || '').startsWith('$major-loop-runner start candidate=');
-    if (!starting && store.mode(String(input.session_id || '')) === 'ordinary') return;
-    const contract = fs.existsSync(contractPath) ? JSON.parse(fs.readFileSync(contractPath, 'utf8')) : unreviewedContract('codex', 'codex-user-prompt-submit');
+    const preparing = input.hook_event_name === 'UserPromptSubmit' && String(input.prompt || '').startsWith('$pre-loop-governor ');
+    if (!starting && !preparing && store.mode(String(input.session_id || '')) === 'ordinary') return;
+    const { handleCodexPreparation } = await import(pathToFileURL(path.join(pluginRoot, 'dist', 'src', 'hosts', 'codex', 'preparation.js')).href);
+    const prepared = handleCodexPreparation(input, { stateRoot, contractPath, store });
+    if (prepared.handled) {
+      if (prepared.output) process.stdout.write(`${JSON.stringify(prepared.output)}\n`);
+      return;
+    }
+    const contract = prepared.contract || (!starting && store.mode(String(input.session_id || '')) === 'research'
+      ? unreviewedContract('codex', 'codex-user-prompt-submit')
+      : fs.existsSync(contractPath) ? JSON.parse(fs.readFileSync(contractPath, 'utf8')) : unreviewedContract('codex', 'codex-user-prompt-submit'));
     const result = handleCodexHook(input, contract, store);
     if (result.output) process.stdout.write(`${JSON.stringify(result.output)}\n`);
   } catch (error) {

@@ -1,12 +1,14 @@
 [English](README.md)
 
-# AsYouMeant 0.3.1
+# AsYouMeant 0.3.2
 
 [更新说明 / Release notes](CHANGELOG.md)：按会话显式启用治理，只读研究不再要求 major-loop permit。
 
 **让编程 Agent 实现“你真正想要的”，而不是“它猜出来的”。**
 
-AsYouMeant 是一套以开发合同约束编程 Agent 的插件，面向 Codex、Claude Code 和 OpenCode，并提供实验性的 DSH 适配。它会在写代码前，把你们的对话整理成一份经过审查的活文档；开工后，只允许执行这份文档批准的工作、Skill、验收和交付动作。
+AsYouMeant 是一套以开发合同约束编程 Agent 的插件，面向 Codex、Claude Code 和 OpenCode，并提供实验性的 DSH 适配。它结合规范讨论流程与运行时权限检查。普通会话不受 AYM 治理；AYM 模式下的强制执行范围取决于宿主暴露的事件和动作信息。
+
+**开发源码（尚未发布）：**[Codex 首个任务指南](docs/CODEX-FIRST-TASK.md) 补充了原生创建草稿、冻结、不同会话的审查确认和显式创建 permit，范围限于指定文件修改。已发布的 0.3.1 不包含这些准备命令。Hook 进程测试已覆盖流程，真实交互式模型会话尚未完成闭环。
 
 <!-- BEGINNER_GUIDE -->
 
@@ -31,7 +33,7 @@ AsYouMeant 是一套以开发合同约束编程 Agent 的插件，面向 Codex�
 - 用一份易读文档代替分散的计划、账本和临时约定；
 - 明确的 Component—Module—Product 开发树；
 - 在同一 Product 内为不同部分选择不同验收模式；
-- 强制拦截未批准的文件、测试、依赖、重试、委派和发布；
+- 明确权限边界，对宿主适配器能够识别的动作执行硬门禁；
 - 根据当前意图选择 Skill，而不是套用固定万能流程。
 
 对于微小、一次性的修改，它会比普通对话更重。它也不能保证 Agent、宿主、测试或需求文档永远没有 Bug；它能做的是让权限、意图、证据和失败都可见、可追溯、有边界。
@@ -39,6 +41,8 @@ AsYouMeant 是一套以开发合同约束编程 Agent 的插件，面向 Codex�
 ### 安装
 
 #### 准备环境
+
+先选择宿主。下方 DSH npm 安装不需要克隆仓库或本地构建；以下环境要求适用于源码构建与验证。
 
 请安装：
 
@@ -181,7 +185,7 @@ Agent 应当帮助你确认：
 
 ### 正式启动 major-loop
 
-活文档通过独立门禁前，任何实现都保持锁定。门禁通过后，Agent 会给出精确候选版本。请由你亲自输入对应宿主的原生命令：
+在 AYM 模式下，运行时合同通过独立门禁前，实现保持锁定；普通模式使用宿主权限。下面的启动命令消费已有的已审查运行时合同，不会自动把对话转换为合同。新增的有限 Codex 准备路径请参照上方未发布指南。请由你亲自输入对应宿主的原生命令：
 
 | 宿主 | 精确命令 |
 | --- | --- |
@@ -317,7 +321,7 @@ major-loop：Component → Module → Product
 可选的无权 post-loop
 ```
 
-TypeScript 核心保持宿主中立。每个宿主包只负责把自己的提示词、命令、Skill 和工具事件转换为统一合同与 Guard 模型。适配器刻意保持轻薄，避免宿主差异污染 Product 逻辑。
+TypeScript 核心保持宿主中立。Codex、Claude Code 和 OpenCode 将可用事件映射到共享 Guard；DSH 使用 Profile Bundle 内的原生守卫。它们并不具备相同的观测能力：目前这些适配器不提供重试证据，Claude Code/OpenCode 的通用动作映射不提供结构化测试与依赖名证据。核心规则存在，不等于所有宿主都能逐项识别和执行它。
 
 ### 一个权威，多种投影
 
@@ -406,7 +410,7 @@ task-local Skill 是兜底方案，不是默认动作。生成物必须绑定触
 | Codex | 插件 Skill、`UserPromptSubmit` 启动识别和 `PreToolUse` Guard | 安装后需重启或新建任务，让 Hook 生效 |
 | Claude Code | 命名空间 Skill 展开与 `PreToolUse` Hook | 使用其文档化插件和 Skill 控制 |
 | OpenCode `1.18.18` | command transform、Skill transform/reload、permission Hook 和工具 Guard | 安装到目标项目 |
-| DSH `0.1.1-rc.2` | Profile Bundle、显式启动 Skill 和 provider 过滤 | 实验性、精确版本、尽力支持 |
+| DSH `0.1.1-rc.2` | Profile Bundle、显式启动 Skill 与工具调用守卫；不对 provider 列表过滤 | 实验性、精确版本、尽力支持 |
 
 所有宿主都必须维持逻辑隔离；只有宿主明确支持且安全时，才物理隐藏已经出池的 Skill。
 
@@ -450,6 +454,11 @@ AsYouMeant 自有源码采用 [MPL-2.0](LICENSE)。来自 Superpowers、Stop Tha
 
 ## 来源与致谢
 
+贡献者：
+
+- **Krypton-117** —— 项目维护者
+- **OpenAI Codex** —— 在维护者指导下协助诊断、实现、测试和文档更新的 AI 编程 Agent
+
 项目与方法论来源：
 
 - [Superpowers](https://github.com/obra/superpowers)
@@ -470,3 +479,4 @@ AsYouMeant 自有源码采用 [MPL-2.0](LICENSE)。来自 Superpowers、Stop Tha
 - [Claude Code Skills](https://code.claude.com/docs/en/skills)
 - [OpenCode Skills](https://opencode.ai/v2/docs/skills) 与 [插件文档](https://opencode.ai/v2/docs/build/plugins/)
 - [DSH Skills 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
+

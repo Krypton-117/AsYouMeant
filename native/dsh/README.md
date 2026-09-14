@@ -5,7 +5,7 @@ AsYouMeant (AYM) adds explicit, contract-governed development to DeepSeek Harnes
 ## Install from npm
 
 ```text
-dsh plugin --profile <profile> add asyoumeant-dsh@0.3.1
+dsh plugin --profile <profile> add asyoumeant-dsh@0.3.2
 ```
 
 ## Install a local package
@@ -24,7 +24,7 @@ From the repository root:
 
 ```text
 node scripts/pack-dsh.mjs
-dsh plugin --profile <profile> add ./.work/packages/asyoumeant-dsh-0.3.1.tgz
+dsh plugin --profile <profile> add ./.work/packages/asyoumeant-dsh-0.3.2.tgz
 ```
 
 `asyoumeant-dsh` is the registry package name. Do not install the whole GitHub repository as an npm plugin: its root package is the development workspace, not this Profile Bundle.

@@ -27,17 +27,17 @@ function extractCommand(input) {
     }
     return "";
 }
-function extractPaths(input, cwd) {
-    if (!input || typeof input !== "object")
-        return [];
-    const record = input;
+export function codexWriteTargets(input, cwd) {
+    const record = input && typeof input === "object" ? input : {};
     const found = new Set();
-    for (const key of ["path", "file", "file_path", "workdir"]) {
+    for (const key of ["path", "file", "file_path", "workdir", "destination", "target_path"]) {
         if (typeof record[key] === "string" && record[key])
             found.add(record[key]);
     }
-    const patch = typeof record.patch === "string" ? record.patch : "";
+    const patch = typeof input === "string" ? input : typeof record.patch === "string" ? record.patch : typeof record.input === "string" ? record.input : "";
     for (const match of patch.matchAll(/^\*\*\* (?:Add|Update|Delete) File: (.+)$/gm))
+        found.add(match[1] ?? "");
+    for (const match of patch.matchAll(/^\*\*\* Move to: (.+)$/gm))
         found.add(match[1] ?? "");
     return [...found].filter(Boolean).map((value) => {
         const absolute = resolve(cwd || process.cwd(), value);
@@ -90,7 +90,7 @@ function toGuardAction(input, contract) {
         kind: classification.kind,
         mutability: classification.mutability,
         basis: structuredClone(contract.actionBasis),
-        targetPaths: extractPaths(input.tool_input, input.cwd),
+        targetPaths: codexWriteTargets(input.tool_input, input.cwd),
         dependencyNames: dependencyNames(command.toLowerCase(), contract.policy.allowedDependencies),
         hashConsumerId: null,
         hardening: false,
