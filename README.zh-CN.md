@@ -456,8 +456,8 @@ AsYouMeant 自有源码采用 [MPL-2.0](LICENSE)。来自 Superpowers、Stop Tha
 
 贡献者：
 
-- **Krypton-117** —— 项目维护者
-- **OpenAI Codex** —— 在维护者指导下协助诊断、实现、测试和文档更新的 AI 编程 Agent
+- **Krypton-117** —— 构想、需求、方向与文档整理
+- **OpenAI Codex（AI 编程助手）** —— 代码实现、测试设计与实现、工具集成排查
 
 项目与方法论来源：
 
@@ -479,4 +479,5 @@ AsYouMeant 自有源码采用 [MPL-2.0](LICENSE)。来自 Superpowers、Stop Tha
 - [Claude Code Skills](https://code.claude.com/docs/en/skills)
 - [OpenCode Skills](https://opencode.ai/v2/docs/skills) 与 [插件文档](https://opencode.ai/v2/docs/build/plugins/)
 - [DSH Skills 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
+
 

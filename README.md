@@ -456,8 +456,8 @@ AsYouMeant-owned source is licensed under [MPL-2.0](LICENSE). Selected or adapte
 
 Contributors:
 
-- **Krypton-117** — project maintainer
-- **OpenAI Codex** — AI coding agent assisting with diagnosis, implementation, testing, and documentation under maintainer direction
+- **Krypton-117** — concept, requirements, direction, and documentation curation
+- **OpenAI Codex (AI coding assistant)** — code implementation, test design and implementation, and tool-integration investigation
 
 Project and methodology sources:
 
@@ -479,4 +479,5 @@ Host documentation:
 - [Claude Code Skills](https://code.claude.com/docs/en/skills)
 - [OpenCode Skills](https://opencode.ai/v2/docs/skills) and [plugins](https://opencode.ai/v2/docs/build/plugins/)
 - [DSH Skills subsystem](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)
+
 
